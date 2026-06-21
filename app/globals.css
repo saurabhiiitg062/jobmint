@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+:root {
+  --primary: #800000;
+  --secondary: #003366;
+  --success: #006400;
+  --accent: #FFC107;
+  --background: #F5F5F5;
+  --white: #FFFFFF;
+  --border: #DDDDDD;
+  
+  --status-success: #198754;
+  --status-warning: #FFC107;
+  --status-danger: #DC3545;
+  --status-info: #0D6EFD;
+
+  --font-sans: 'Noto Sans', Arial, sans-serif;
+  --font-hindi: 'Noto Sans Devanagari', 'Noto Sans', Arial, sans-serif;
+}
+
+@theme inline {
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-success: var(--success);
+  --color-accent: var(--accent);
+  --color-bg-custom: var(--background);
+  --color-border-custom: var(--border);
+
+  --color-status-success: var(--status-success);
+  --color-status-warning: var(--status-warning);
+  --color-status-danger: var(--status-danger);
+  --color-status-info: var(--status-info);
+  
+  --font-sans: var(--font-sans);
+  --font-hindi: var(--font-hindi);
+}
+
+body {
+  background-color: var(--background);
+  color: #333333;
+  font-family: var(--font-sans);
+  line-height: 1.6;
+}
+
+/* Custom styles for Sarkari-style tables */
+.sarkari-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.sarkari-table th {
+  background-color: var(--secondary);
+  color: white;
+  padding: 8px 12px;
+  font-size: 14px;
+  text-align: left;
+  border: 1px solid var(--border);
+}
+
+.sarkari-table td {
+  padding: 10px 12px;
+  font-size: 14px;
+  border: 1px solid var(--border);
+  background-color: white;
+}
+
+.sarkari-table tr:nth-child(even) td {
+  background-color: #f9f9f9;
+}
+
+.sarkari-link {
+  color: var(--primary);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.sarkari-link:hover {
+  text-decoration: underline;
+  color: #c00000;
+}

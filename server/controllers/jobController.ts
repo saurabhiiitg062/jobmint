@@ -1,0 +1,192 @@
+import { Request, Response } from 'express';
+import { Job } from '../models/Job.js';
+import { Category } from '../models/Category.js';
+import { State } from '../models/State.js';
+
+// Helper to generate slug
+const generateSlug = (text: string) => {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-') // Replace spaces with -
+    .replace(/[^\w\-]+/g, '') // Remove all non-word chars
+    .replace(/\-\-+/g, '-'); // Replace multiple - with single -
+};
+
+// Create Job
+export const createJob = async (req: Request, res: Response) => {
+  try {
+    const jobData = { ...req.body };
+    if (!jobData.slug) {
+      jobData.slug = generateSlug(jobData.title);
+    }
+    
+    // Check slug uniqueness
+    const existing = await Job.findOne({ slug: jobData.slug });
+    if (existing) {
+      jobData.slug = `${jobData.slug}-${Date.now()}`;
+    }
+
+    const job = new Job(jobData);
+    await job.save();
+
+    // Auto-create category / state references if needed
+    if (jobData.state) {
+      const stateSlug = generateSlug(jobData.state);
+      await State.findOneAndUpdate(
+        { name: jobData.state },
+        { name: jobData.state, slug: stateSlug },
+        { upsert: true }
+      );
+    }
+
+    res.status(201).json(job);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Update Job
+export const updateJob = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    const jobData = { ...req.body };
+    if (jobData.title && !jobData.slug) {
+      jobData.slug = generateSlug(jobData.title);
+    }
+
+    const job = await Job.findByIdAndUpdate(id, jobData, { new: true });
+    if (!job) return res.status(404).json({ message: 'Job not found' });
+    res.json(job);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Delete Job
+export const deleteJob = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    const job = await Job.findByIdAndDelete(id);
+    if (!job) return res.status(404).json({ message: 'Job not found' });
+    res.json({ message: 'Job deleted successfully' });
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get Job By Slug (increments view count)
+export const getJobBySlug = async (req: Request, res: Response) => {
+  const { slug } = req.params;
+  try {
+    const job = await Job.findOneAndUpdate(
+      { slug },
+      { $inc: { views: 1 } },
+      { new: true }
+    );
+    if (!job) return res.status(404).json({ message: 'Job not found' });
+    res.json(job);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get Jobs with dynamic filter options and pagination
+export const getJobs = async (req: Request, res: Response) => {
+  try {
+    const { 
+      category, 
+      state, 
+      qualification, 
+      organization, 
+      search, 
+      status, 
+      limit = '20', 
+      page = '1' 
+    } = req.query;
+
+    const filter: any = {};
+
+    if (category) filter.category = category;
+    if (state) filter.state = new RegExp(`^${state}$`, 'i');
+    if (qualification) filter.qualification = new RegExp(`^${qualification}$`, 'i');
+    if (organization) filter.organization = new RegExp(`^${organization}$`, 'i');
+    if (status) filter.status = status;
+    
+    if (search) {
+      filter.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { postName: { $regex: search, $options: 'i' } },
+        { organization: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const lim = parseInt(limit as string, 10);
+    const pg = parseInt(page as string, 10);
+
+    const jobs = await Job.find(filter)
+      .sort({ publishedAt: -1 })
+      .skip((pg - 1) * lim)
+      .limit(lim);
+
+    const total = await Job.countDocuments(filter);
+
+    res.json({
+      jobs,
+      pagination: {
+        total,
+        page: pg,
+        limit: lim,
+        pages: Math.ceil(total / lim)
+      }
+    });
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Bulk Import
+export const bulkImportJobs = async (req: Request, res: Response) => {
+  const { jobs } = req.body; // array of jobs
+  if (!Array.isArray(jobs)) {
+    return res.status(400).json({ message: 'Jobs payload must be an array' });
+  }
+  try {
+    const preparedJobs = jobs.map(j => ({
+      ...j,
+      slug: j.slug || generateSlug(j.title) + '-' + Math.floor(Math.random() * 1000)
+    }));
+    const result = await Job.insertMany(preparedJobs);
+    res.status(201).json({ message: `Successfully imported ${result.length} jobs` });
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Bulk Delete
+export const bulkDeleteJobs = async (req: Request, res: Response) => {
+  const { ids } = req.body;
+  if (!Array.isArray(ids)) {
+    return res.status(400).json({ message: 'IDs must be an array' });
+  }
+  try {
+    const result = await Job.deleteMany({ _id: { $in: ids } });
+    res.json({ message: `Successfully deleted ${result.deletedCount} jobs` });
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Dynamic Programmatic metadata / listings
+export const getQuickStats = async (req: Request, res: Response) => {
+  try {
+    const states = await Job.distinct('state');
+    const qualifications = await Job.distinct('qualification');
+    const organizations = await Job.distinct('organization');
+    const categories = await Job.distinct('category');
+    res.json({ states, qualifications, organizations, categories });
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
