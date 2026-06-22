@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { ExternalLink, Calendar, Link2, FileText, Share2, Award, Users, CreditCard } from 'lucide-react';
 import { Job } from '@/types';
@@ -188,6 +188,12 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
               <td className="font-bold text-gray-700">Qualification Required</td>
               <td className="text-gray-900 font-bold">{job.qualification}</td>
             </tr>
+{job.fee && (
+  <tr>
+    <td className="font-bold text-gray-700">Fee</td>
+    <td className="text-gray-900">{job.fee}</td>
+  </tr>
+)}
             {job.ageLimit && (
               <tr>
                 <td className="font-bold text-gray-700">Age Limit</td>

@@ -7,6 +7,7 @@ export interface Job {
   vacancy?: number;
   salary?: string;
   qualification: string;
+  fee?: string;
   ageLimit?: string;
   applicationFee?: string;
   selectionProcess?: string;

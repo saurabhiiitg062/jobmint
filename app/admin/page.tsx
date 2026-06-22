@@ -36,13 +36,22 @@ const jobFormSchema = z.object({
   downloadNotification: z.string().optional(),
   officialWebsite: z.string().optional(),
   seoTitle: z.string().optional(),
-  seoDescription: z.string().optional()
+  seoDescription: z.string().optional(),
+  applyStart: z.string().optional(),
+  applyLastDate: z.string().optional()
 });
 
 export default function AdminDashboard() {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    setReady(true);
+  }, []);
+  
+
   const dispatch = useDispatch();
   const { isAuthenticated, admin, token } = useSelector((state: RootState) => state.auth);
   
+
   // Local state
   const [activeTab, setActiveTab] = useState<'analytics' | 'jobs' | 'blogs' | 'bulk'>('analytics');
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -195,6 +204,10 @@ export default function AdminDashboard() {
     setJobValue('seoDescription', job.seoDescription || '');
     setActiveTab('jobs');
   };
+
+  if (!ready) {
+    return null;
+  }
 
   if (!isAuthenticated) {
     return (

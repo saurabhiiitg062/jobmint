@@ -1,6 +1,8 @@
 import React from 'react';
 import Link from 'next/link';
-import { Search, Briefcase, FileText, CheckCircle2, ChevronRight, Award, MapPin, Building2, HelpCircle } from 'lucide-react';
+import { Search, Briefcase, FileText, CheckCircle2, ChevronRight, Award, MapPin, Building2, HelpCircle, Clock, Flame, CheckCircle } from 'lucide-react';
+import ExamCalendar from '@/components/ExamCalendar';
+
 import { api } from '@/lib/api/client';
 import { mockJobs, mockBlogs } from '@/lib/mockData';
 import { Job, Blog } from '@/types';
@@ -24,6 +26,7 @@ export default async function HomePage() {
   // Use mock data for demonstration
   const jobsList = mockJobs;
   const blogsList = mockBlogs;
+  const today = new Date();
 
   // Filter categories
   const latestJobs = jobsList.filter(j => j.category === 'Latest Job').slice(0, 12);
@@ -86,6 +89,16 @@ export default async function HomePage() {
       {/* Main Jobs/Admit Cards/Results Grid - Traditional Sarkari layout style but premium */}
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Latest Jobs Column */}
+
+         <div className="col-span-full">
+          {/* Exam Calender */}
+          <div   className="bg-white border border-border-custom rounded-lg p-6 shadow-sm">
+            <h3 className="text-lg font-bold text-secondary border-b border-border-custom pb-2 flex items-center space-x-2">
+              <span>Exam Calendar</span>
+            </h3>
+          <ExamCalendar exams={latestJobs} />
+          </div>
+        </div>
         <div className="bg-white border border-border-custom rounded-lg shadow-sm flex flex-col">
           <div className="bg-primary text-white px-4 py-3 rounded-t-lg flex items-center justify-between">
             <h3 className="font-bold text-sm uppercase tracking-wider flex items-center space-x-2">
@@ -97,15 +110,24 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="p-3 divide-y divide-gray-100 flex-grow">
-            {latestJobs.length > 0 ? latestJobs.map((job) => (
-              <Link 
-                key={job._id} 
-                href={`/jobs/${job.slug}`}
-                className="block py-2.5 px-2 hover:bg-gray-50 rounded transition-colors text-xs sm:text-sm text-primary hover:text-red-700 font-medium"
-              >
-                {job.title} {job.vacancy ? `(${job.vacancy} Post)` : ''}
-              </Link>
-            )) : (
+            {/* Eligibility Checker for latest jobs */}
+
+            {latestJobs.length > 0 ? latestJobs.map((job) => {
+              const applyLastDate = job.importantDates?.applyLastDate ? new Date(job.importantDates.applyLastDate) : null;
+              const today = new Date();
+              const daysRemaining = applyLastDate ? Math.max(0, Math.ceil((applyLastDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))) : null;
+              return (
+                <div key={job._id} className="flex items-center justify-between py-2.5 px-2">
+                  <Link href={`/jobs/${job.slug}`} className="text-xs sm:text-sm text-primary hover:text-red-700 font-medium">
+                    {job.title} {job.vacancy ? `(${job.vacancy} Post)` : ''}
+                  </Link>
+                  <div className="flex items-center space-x-2">
+                    <Clock className="w-4 h-4 text-gray-500" aria-label="Days left" />
+                    <span className="text-xs text-gray-600">{daysRemaining !== null ? `${daysRemaining}d` : '-'}</span>
+                  </div>
+                </div>
+              );
+            }) : (
               <p className="text-gray-400 text-center py-6 text-xs">No active jobs found.</p>
             )}
           </div>
@@ -206,7 +228,13 @@ export default async function HomePage() {
               </Link>
             ))}
           </div>
+
+          
         </div>
+
+       
+
+
       </section>
 
       {/* Programmatic SEO Grid: By Qualification, By State, By Organization */}

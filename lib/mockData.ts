@@ -69,6 +69,7 @@ export const mockJobs: Job[] = [
     postName: 'CGL Tier II',
     vacancy: 12000,
     qualification: 'Graduation',
+    fee: 'Rs. 100',
     importantDates: { examDate: 'July 5-8, 2026' },
     importantLinks: { downloadAdmitCard: 'https://ssc.gov.in' },
     category: 'Admit Card',
@@ -165,6 +166,22 @@ export const mockJobs: Job[] = [
     updatedAt: '2026-06-12T08:00:00Z'
   },
 
+  {
+    _id: '11',
+    title: 'DRDO CEPTAM 11 Syllabus & Exam Pattern PDF',
+    slug: 'drdo-ceptam-11-syllabus',
+    organization: 'DRDO',
+    postName: 'CEPTAM 11 Technician',
+    vacancy: 1800,
+    qualification: 'Diploma',
+    importantLinks: { downloadNotification: '#' },
+    category: 'Syllabus',
+    views: 450,
+    status: 'published',
+    publishedAt: '2026-06-12T08:00:00Z',
+    createdAt: '2026-06-12T08:00:00Z',
+    updatedAt: '2026-06-12T08:00:00Z'
+  },
   // Govt Schemes
   {
     _id: '10',
