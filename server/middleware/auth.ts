@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'jobjanta-secret-key-12345';
+const JWT_SECRET = process.env.JWT_SECRET || 'SelectionSure-secret-key-12345';
 
 export interface AuthenticatedRequest extends Request {
   adminId?: string;

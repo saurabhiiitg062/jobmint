@@ -4,7 +4,7 @@ import { Admin } from '../models/Admin.js';
 import { Job } from '../models/Job.js';
 import { Blog } from '../models/Blog.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'jobjanta-secret-key-12345';
+const JWT_SECRET = process.env.JWT_SECRET || 'SelectionSure-secret-key-12345';
 
 // Admin Login
 export const loginAdmin = async (req: Request, res: Response) => {

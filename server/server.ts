@@ -13,7 +13,7 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/jobjanta';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/SelectionSure';
 
 // Middleware Security Setup
 app.use(helmet({
@@ -60,12 +60,12 @@ const seedInitialAdmin = async () => {
     if (adminCount === 0) {
       const initialAdmin = new Admin({
         name: 'Super Admin',
-        email: 'admin@jobjanta.com',
+        email: 'admin@SelectionSure.com',
         password: 'adminpassword123', // Will be pre-hashed in schema save hook
         role: 'superadmin'
       });
       await initialAdmin.save();
-      console.log('seeded default admin: admin@jobjanta.com / adminpassword123');
+      console.log('seeded default admin: admin@SelectionSure.com / adminpassword123');
     }
   } catch (err) {
     console.error('Seed Admin error:', err);

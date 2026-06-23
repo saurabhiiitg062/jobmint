@@ -5,7 +5,7 @@ import { mockJobs, mockBlogs } from '@/lib/mockData';
 import { Job, Blog } from '@/types';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://jobjanta.com';
+  const baseUrl = 'https://SelectionSure.com';
   let jobsList: Job[] = [];
   let blogsList: Blog[] = [];
 

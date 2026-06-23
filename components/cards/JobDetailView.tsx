@@ -17,9 +17,9 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://jobjanta.com' },
-      { '@type': 'ListItem', position: 2, name: job.category, item: `https://jobjanta.com/${categorySlug}` },
-      { '@type': 'ListItem', position: 3, name: job.title, item: `https://jobjanta.com/${categorySlug}/${job.slug}` }
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://SelectionSure.com' },
+      { '@type': 'ListItem', position: 2, name: job.category, item: `https://SelectionSure.com/${categorySlug}` },
+      { '@type': 'ListItem', position: 3, name: job.title, item: `https://SelectionSure.com/${categorySlug}/${job.slug}` }
     ]
   };
 
@@ -36,7 +36,7 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
       hiringOrganization: {
         '@type': 'Organization',
         name: job.organization,
-        sameAs: job.importantLinks?.officialWebsite || 'https://jobjanta.com'
+        sameAs: job.importantLinks?.officialWebsite || 'https://SelectionSure.com'
       },
       jobLocation: {
         '@type': 'Place',
@@ -119,7 +119,7 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
         name: `How to check/download details for ${job.title}?`,
         acceptedAnswer: {
           '@type': 'Answer',
-          text: `Candidates can download the notification or apply from the important links section on JobJanta.`
+          text: `Candidates can download the notification or apply from the important links section on SelectionSure.`
         }
       }
     ]

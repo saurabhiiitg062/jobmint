@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import logo from '../../public/asset/branding.png'
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -34,12 +35,13 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* Info Column */}
         <div className="space-y-3">
-          <h2 className="text-xl font-bold text-white tracking-tight">JobJanta</h2>
+          {/* <h2 className="text-xl font-bold text-white tracking-tight">SelectionSure</h2> */}
+          <img src={logo.src} width={200} height={30} alt="logo" />
           <p className="text-xs leading-relaxed text-gray-400">
-            JobJanta is India&apos;s leading government job update portal. We provide fast, reliable, and real-time alerts for Sarkari Results, Admit Cards, Syllabi, Answer Keys, and Scheme updates.
+            SelectionSure is India&apos;s leading government job update portal. We provide fast, reliable, and real-time alerts for Sarkari Results, Admit Cards, Syllabi, Answer Keys, and Scheme updates.
           </p>
           <div className="pt-2 text-xs">
-            <span className="font-bold text-white">Email:</span> support@jobjanta.com
+            <span className="font-bold text-white">Email:</span> support@SelectionSure.com
           </div>
         </div>
 
@@ -88,10 +90,10 @@ export default function Footer() {
 
       <div className="max-w-7xl mx-auto px-4 mt-8 pt-4 border-t border-blue-900 text-center text-[10px] text-gray-500">
         <p className="leading-relaxed">
-          Disclaimer: JobJanta is not affiliated with any government organisation. All information published here is sourced from official press notifications and official websites. Job aspirants must verify details independently before applying.
+          Disclaimer: SelectionSure is not affiliated with any government organisation. All information published here is sourced from official press notifications and official websites. Job aspirants must verify details independently before applying.
         </p>
         <p className="mt-2 text-gray-400">
-          &copy; {currentYear} JobJanta.com. All Rights Reserved. Designed for fast and lightweight mobile-first SEO performance.
+          &copy; {currentYear} SelectionSure.com. All Rights Reserved. Designed for fast and lightweight mobile-first SEO performance.
         </p>
       </div>
     </footer>

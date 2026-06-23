@@ -13,8 +13,8 @@ const notoSans = Noto_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'JobJanta - Latest Government Jobs, Admit Cards & Sarkari Results 2026',
-  description: 'Get real-time updates for latest government jobs, SSC, UPSC, Railway (RRB) exams, Admit Cards, Sarkari Results, Syllabi, and Answer Keys on JobJanta.',
+  title: 'SelectionSure - Latest Government Jobs, Admit Cards & Sarkari Results 2026',
+  description: 'Get real-time updates for latest government jobs, SSC, UPSC, Railway (RRB) exams, Admit Cards, Sarkari Results, Syllabi, and Answer Keys on SelectionSure.',
   keywords: 'Sarkari Result, Government Jobs, Free Job Alert, SSC, UPSC, Railway Jobs, Admit Card, Answer Key',
 };
 

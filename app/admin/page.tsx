@@ -132,7 +132,7 @@ export default function AdminDashboard() {
       dispatch(setCredentials({ token: res.token, admin: res.admin }));
       setSuccessMsg('Logged in successfully!');
     } catch (err: any) {
-      setErrorMsg(err.message || 'Login failed. Try using default: admin@jobjanta.com / adminpassword123');
+      setErrorMsg(err.message || 'Login failed. Try using default: admin@SelectionSure.com / adminpassword123');
     }
   };
 
@@ -217,7 +217,7 @@ export default function AdminDashboard() {
             JJ
           </div>
           <h2 className="text-2xl font-bold text-secondary">Admin Login</h2>
-          <p className="text-xs text-gray-400 font-medium">JobJanta Exam Update Management Portal</p>
+          <p className="text-xs text-gray-400 font-medium">SelectionSure Exam Update Management Portal</p>
         </div>
 
         {errorMsg && (
@@ -235,7 +235,7 @@ export default function AdminDashboard() {
             <input
               type="email"
               {...registerLogin('email')}
-              placeholder="admin@jobjanta.com"
+              placeholder="admin@SelectionSure.com"
               className="w-full p-2.5 border border-border-custom rounded focus:outline-none focus:ring-1 focus:ring-secondary text-sm"
             />
             {loginErrors.email && <span className="text-[10px] text-status-danger font-bold">{loginErrors.email.message as string}</span>}
@@ -265,7 +265,7 @@ export default function AdminDashboard() {
 
         <div className="bg-gray-50 p-3 rounded text-[11px] text-gray-500 border border-gray-150">
           <strong>Initial Failsafe Credentials:</strong><br />
-          Email: <code className="bg-gray-200 px-1 rounded">admin@jobjanta.com</code><br />
+          Email: <code className="bg-gray-200 px-1 rounded">admin@SelectionSure.com</code><br />
           Password: <code className="bg-gray-200 px-1 rounded">adminpassword123</code>
         </div>
       </div>
@@ -277,7 +277,7 @@ export default function AdminDashboard() {
       {/* Header bar */}
       <div className="bg-white border border-border-custom rounded-lg p-4 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 shadow-sm">
         <div>
-          <h2 className="text-lg font-bold text-secondary">JobJanta Control Center</h2>
+          <h2 className="text-lg font-bold text-secondary">SelectionSure Control Center</h2>
           <p className="text-xs text-gray-400">Welcome, {admin?.name || 'Administrator'} ({admin?.role})</p>
         </div>
         <button
