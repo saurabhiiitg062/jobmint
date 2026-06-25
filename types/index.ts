@@ -28,6 +28,7 @@ export interface Job {
     downloadAnswerKey?: string;
   };
   notificationPdf?: string;
+  officialWebsite?:string,
   applicationStartDate?: string;
   applicationLastDate?: string;
   examDate?: string;

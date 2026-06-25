@@ -13,7 +13,7 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/SelectionSure';
+const MONGODB_URI = process.env.MONGODB_URI;
 
 // Middleware Security Setup
 app.use(helmet({
@@ -30,14 +30,17 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(mongoSanitize());
 
 // Rate Limiter
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per window
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { message: 'Too many requests from this IP, please try again after 15 minutes.' }
-});
-app.use('/api/', limiter);
+// const limiter = rateLimit({
+//   windowMs: 15 * 60 * 1000, // 15 minutes
+//   max: 100, // Limit each IP to 100 requests per window
+//   standardHeaders: true,
+//   legacyHeaders: false,
+//   message: { message: 'Too many requests from this IP, please try again after 15 minutes.' }
+// });
+// app.use('/api/', limiter);
+
+console.log("Current Dir:", process.cwd());
+console.log("MONGODB_URI:", process.env.MONGODB_URI);
 
 // Routing
 app.use('/api/admin', adminRoutes);
@@ -45,7 +48,7 @@ app.use('/api', jobRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ 
+  res.json({
     status: 'healthy',
     database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
     timestamp: new Date()
@@ -73,9 +76,11 @@ const seedInitialAdmin = async () => {
 };
 
 // Database Connection and Server Startup
-mongoose.connect(MONGODB_URI)
+mongoose.connect(MONGODB_URI!)
   .then(() => {
     console.log('MongoDB connected successfully');
+    console.log("Connected DB:", mongoose.connection.name);
+
     seedInitialAdmin();
     app.listen(PORT, () => {
       console.log(`Backend server is running on port ${PORT}`);

@@ -29,6 +29,7 @@ export default function Navbar() {
     { name: 'Results', href: '/results' },
     { name: 'Answer Key', href: '/answer-keys' },
     { name: 'Syllabus', href: '/syllabus' },
+    { name: 'Age Calculator', href: '/age-calculator' },
     { name: 'Govt Schemes', href: '/government-schemes' },
     { name: 'Blog', href: '/blog' },
   ];
@@ -200,7 +201,7 @@ export default function Navbar() {
         </div>
 
         <Marquee
-          scrollAmount={5}
+          scrollamount={5}
           className="cursor-pointer flex-1"
         >
           <Link href="/jobs" className="mr-8 hover:underline">

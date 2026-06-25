@@ -2,7 +2,23 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ExternalLink, Calendar, Link2, FileText, Share2, Award, Users, CreditCard } from 'lucide-react';
+import Image from 'next/image';
+import {
+  CalendarDays,
+  CircleDollarSign,
+  ExternalLink,
+  FileText,
+  Globe,
+  GraduationCap,
+  Link2,
+  LucideIcon,
+  MapPin,
+  ScrollText,
+  Send,
+  Share2,
+  Users,
+  Globe2
+} from 'lucide-react';
 import { Job } from '@/types';
 import StructuredData from '@/components/seo/StructuredData';
 
@@ -11,87 +27,130 @@ interface JobDetailViewProps {
   categorySlug: 'jobs' | 'admit-cards' | 'results' | 'answer-keys' | 'syllabus' | 'government-schemes';
 }
 
+type DetailItem = {
+  label: string;
+  value: string;
+};
+
+type LinkItem = {
+  href: string;
+  label: string;
+  action: string;
+  icon: LucideIcon;
+};
+
+const dateFormatter = new Intl.DateTimeFormat('en-GB', {
+  day: '2-digit',
+  month: 'short',
+  year: 'numeric',
+});
+
+function formatDate(value?: string) {
+  if (!value) return null;
+
+  const parsed = new Date(value);
+  if (!Number.isNaN(parsed.getTime())) {
+    return dateFormatter.format(parsed);
+  }
+
+  return value;
+}
+
+function getOverviewTitle(title: string) {
+  if (/overview/i.test(title)) {
+    return title;
+  }
+
+  return `${title} Overview`;
+}
+
+function getCategorySummary(category: string) {
+  if (category === 'Latest Job') {
+    return 'Government Jobs';
+  }
+
+  return category;
+}
+
+function buildOverview(job: Job) {
+  const title = job.title.replace(/\s+/g, ' ').trim();
+  const org = job.organization || 'the concerned department';
+  const applyStart = formatDate(job.importantDates?.applyStart || job.applicationStartDate);
+  const applyEnd = formatDate(job.importantDates?.applyLastDate || job.applicationLastDate);
+
+  if (applyStart && applyEnd) {
+    return `${org} has released the official notification for ${title}. Eligible candidates can apply online from ${applyStart} to ${applyEnd} through the official portal.`;
+  }
+
+  return `${org} has released the official notification for ${title}. Candidates should review the official notice, check eligibility, and use the important links below for the latest updates.`;
+}
+
+function shareJob(title: string, slug: string, categorySlug: JobDetailViewProps['categorySlug']) {
+  if (typeof navigator === 'undefined' || !navigator.share) {
+    return;
+  }
+
+  navigator.share({
+    title,
+    text: `Check details for ${title}`,
+    url: `/${categorySlug}/${slug}`,
+  }).catch(() => {
+    // Ignore cancelled shares.
+  });
+}
+
 export default function JobDetailView({ job, categorySlug }: JobDetailViewProps) {
-  // Breadcrumb structure
+  const [activeTab, setActiveTab] = useState('overview');
+
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://SelectionSure.com' },
       { '@type': 'ListItem', position: 2, name: job.category, item: `https://SelectionSure.com/${categorySlug}` },
-      { '@type': 'ListItem', position: 3, name: job.title, item: `https://SelectionSure.com/${categorySlug}/${job.slug}` }
-    ]
+      { '@type': 'ListItem', position: 3, name: job.title, item: `https://SelectionSure.com/${categorySlug}/${job.slug}` },
+    ],
   };
 
-  // JobPosting schema if it is Latest Job
-  let jobPostingSchema: any = null;
-  if (job.category === 'Latest Job') {
-    jobPostingSchema = {
-      '@context': 'https://schema.org',
-      '@type': 'JobPosting',
-      title: job.title,
-      description: job.seoDescription || job.title,
-      datePosted: job.publishedAt || job.createdAt,
-      validThrough: job.applicationLastDate || undefined,
-      hiringOrganization: {
-        '@type': 'Organization',
-        name: job.organization,
-        sameAs: job.importantLinks?.officialWebsite || 'https://SelectionSure.com'
-      },
-      jobLocation: {
-        '@type': 'Place',
-        address: {
-          '@type': 'PostalAddress',
-          addressLocality: job.state || 'Central',
-          addressRegion: job.state || 'India',
-          addressCountry: 'IN'
+  const jobPostingSchema =
+    job.category === 'Latest Job'
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'JobPosting',
+          title: job.title,
+          description: job.seoDescription || job.title,
+          datePosted: job.publishedAt || job.createdAt,
+          validThrough: job.applicationLastDate || job.importantDates?.applyLastDate || undefined,
+          hiringOrganization: {
+            '@type': 'Organization',
+            name: job.organization,
+            sameAs: job.importantLinks?.officialWebsite || 'https://SelectionSure.com',
+          },
+          jobLocation: {
+            '@type': 'Place',
+            address: {
+              '@type': 'PostalAddress',
+              addressLocality: job.state || 'Central',
+              addressRegion: job.state || 'India',
+              addressCountry: 'IN',
+            },
+          },
+          baseSalary: job.salary
+            ? {
+                '@type': 'MonetaryAmount',
+                currency: 'INR',
+                value: {
+                  '@type': 'QuantitativeValue',
+                  value: job.salary,
+                  unitText: 'MONTH',
+                },
+              }
+            : undefined,
+          educationRequirements: job.qualification,
+          employmentType: 'FULL_TIME',
         }
-      },
-      baseSalary: job.salary ? {
-        '@type': 'MonetaryAmount',
-        currency: 'INR',
-        value: {
-          '@type': 'QuantitativeValue',
-          value: job.salary,
-          unitText: 'MONTH'
-        }
-      } : undefined,
-      educationRequirements: job.qualification,
-      employmentType: 'FULL_TIME'
-    };
-  }
+      : null;
 
-    // Eligibility & Deadline Section
-  const today = new Date();
-  const applyLastDateStr = job.importantDates?.applyLastDate;
-  const applyLastDate = applyLastDateStr ? new Date(applyLastDateStr) : null;
-  const daysLeft = applyLastDate ? Math.ceil((applyLastDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) : null;
-  const [showEligibility, setShowEligibility] = useState(false);
-
-// Inside the JSX, after the important dates table (e.g., after line 224)
-{applyLastDate && (
-  <div className="mt-4 p-4 bg-indigo-50 border border-indigo-200 rounded">
-    <p className="font-semibold text-indigo-800">
-      Last day to apply: {applyLastDate.toLocaleDateString()} ({daysLeft !== null && daysLeft >= 0 ? `${daysLeft} day${daysLeft !== 1 ? 's' : ''} left` : 'deadline passed'})
-    </p>
-    <button
-      className="mt-2 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-      onClick={() => setShowEligibility(!showEligibility)}
-    >
-      {showEligibility ? 'Hide Eligibility' : 'Check Your Eligibility'}
-    </button>
-    {showEligibility && (
-      <div className="mt-3 p-3 bg-white border border-gray-200 rounded">
-        <p className="font-medium mb-2">Eligibility criteria:</p>
-        <ul className="list-disc list-inside text-sm text-gray-700">
-          <li>Qualification: {job.qualification}</li>
-          {job.ageLimit && <li>Age Limit: {job.ageLimit}</li>}
-          {job.applicationFee && <li>Application Fee: {job.applicationFee}</li>}
-        </ul>
-      </div>
-    )}
-  </div>
-)}
   const faqSchema = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
@@ -101,274 +160,474 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
         name: `What is the last date to apply for ${job.title}?`,
         acceptedAnswer: {
           '@type': 'Answer',
-          text: job.importantDates?.applyLastDate 
-            ? `The last date to apply is ${job.importantDates.applyLastDate}.` 
-            : `Please check the official notification for the last date of application.`
-        }
+          text: job.importantDates?.applyLastDate
+            ? `The last date to apply is ${job.importantDates.applyLastDate}.`
+            : 'Please check the official notification for the closing date.',
+        },
       },
       {
         '@type': 'Question',
         name: `What is the qualification required for ${job.title}?`,
         acceptedAnswer: {
           '@type': 'Answer',
-          text: `The qualification required is ${job.qualification}.`
-        }
+          text: `The qualification required is ${job.qualification}.`,
+        },
       },
       {
         '@type': 'Question',
-        name: `How to check/download details for ${job.title}?`,
+        name: `Where can I get the official links for ${job.title}?`,
         acceptedAnswer: {
           '@type': 'Answer',
-          text: `Candidates can download the notification or apply from the important links section on SelectionSure.`
-        }
-      }
-    ]
+          text: 'Use the important links section to open the official website, notification, and application links.',
+        },
+      },
+    ],
   };
 
+  const topStats = [
+    {
+      label: 'Total Posts',
+      value: job.vacancy ? String(job.vacancy) : 'As per notice',
+      icon: Users,
+    },
+    {
+      label: 'Apply Start',
+      value: formatDate(job.importantDates?.applyStart || job.applicationStartDate) || 'Check notice',
+      icon: CalendarDays,
+    },
+    {
+      label: 'Last Date',
+      value: formatDate(job.importantDates?.applyLastDate || job.applicationLastDate) || 'Check notice',
+      icon: CalendarDays,
+    },
+    {
+      label: 'Exam Date',
+      value: formatDate(job.importantDates?.examDate || job.examDate) || 'As scheduled',
+      icon: ScrollText,
+    },
+    {
+      label: 'Job Location',
+      value: job.state === 'Central' || !job.state ? 'All India' : job.state,
+      icon: MapPin,
+    },
+  ];
+
+  const overviewDetails: DetailItem[] = [
+    { label: 'Organization', value: job.organization },
+    { label: 'Post Name', value: job.postName },
+    { label: 'Total Posts', value: job.vacancy ? String(job.vacancy) : 'As per notification' },
+    { label: 'Job Location', value: job.state === 'Central' || !job.state ? 'All India' : job.state },
+    { label: 'Apply Mode', value: 'Online' },
+    { label: 'Official Website', value: job.importantLinks?.officialWebsite || 'Check below' },
+    { label: 'Notification No.', value: job.slug.toUpperCase().replace(/-/g, ' ') },
+    { label: 'Apply Start Date', value: formatDate(job.importantDates?.applyStart || job.applicationStartDate) || 'Check notice' },
+    { label: 'Last Date to Apply', value: formatDate(job.importantDates?.applyLastDate || job.applicationLastDate) || 'Check notice' },
+    { label: 'Exam Date', value: formatDate(job.importantDates?.examDate || job.examDate) || 'As scheduled' },
+    { label: 'Category', value: getCategorySummary(job.category) },
+    { label: 'Qualification', value: job.qualification },
+  ];
+
+  const summaryDetails: DetailItem[] = [
+    { label: 'Exam Name', value: job.title },
+    { label: 'Conducting Body', value: job.organization },
+    { label: 'Post Name', value: job.postName },
+    { label: 'Total Posts', value: job.vacancy ? String(job.vacancy) : 'As per notice' },
+    { label: 'Job Location', value: job.state === 'Central' || !job.state ? 'All India' : job.state },
+    { label: 'Category', value: getCategorySummary(job.category) },
+  ];
+
+  const importantLinks = [
+    job.importantLinks?.applyOnline
+      ? { href: job.importantLinks.applyOnline, label: 'Apply Online', action: 'Click Here', icon: ExternalLink }
+      : null,
+    job.notificationPdf || job.importantLinks?.downloadNotification
+      ? {
+          href: job.notificationPdf || job.importantLinks?.downloadNotification || '#',
+          label: 'Official Notification',
+          action: 'Download',
+          icon: FileText,
+        }
+      : null,
+    job.notificationPdf || job.importantLinks?.downloadNotification
+      ? {
+          href: job.notificationPdf || job.importantLinks?.downloadNotification || '#',
+          label: 'Detailed Advertisement',
+          action: 'Download',
+          icon: FileText,
+        }
+      : null,
+
+      job.notificationPdf || job.importantLinks?.downloadNotification
+      ? {
+          href: job.officialWebsite || job.officialWebsite || '#',
+          label: 'Official Website',
+          action: 'Click Here',
+          icon: Globe,
+        }
+      : null,
+    job.importantLinks?.downloadAdmitCard
+      ? {
+          href: job.importantLinks.downloadAdmitCard,
+          label: 'Admit Card',
+          action: 'Download',
+          icon: Link2,
+        }
+      : null,
+    job.importantLinks?.downloadResult
+      ? {
+          href: job.importantLinks.downloadResult,
+          label: 'Result',
+          action: 'View Now',
+          icon: Link2,
+        }
+      : null,
+    job.importantLinks?.downloadAnswerKey
+      ? {
+          href: job.importantLinks.downloadAnswerKey,
+          label: 'Answer Key',
+          action: 'Download',
+          icon: Link2,
+        }
+      : null,
+    job.importantLinks?.officialWebsite
+      ? {
+          href: job.importantLinks.officialWebsite,
+          label: 'Check Official Website',
+          action: 'Visit Now',
+          icon: Globe,
+        }
+      : null,
+  ].filter((item): item is LinkItem => Boolean(item));
+
+  const tabItems = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'important-dates', label: 'Important Dates' },
+    { id: 'eligibility', label: 'Eligibility' },
+    { id: 'application-fee', label: 'Application Fee' },
+    { id: 'selection-process', label: 'Selection Process' },
+    { id: 'syllabus', label: 'Syllabus' },
+    { id: 'official-notification', label: 'Official Notification' },
+  ];
+
   return (
-    <article className="space-y-8 bg-white border border-border-custom rounded-lg p-5 md:p-8 shadow-sm">
+    <article className="space-y-5">
       <StructuredData data={breadcrumbSchema} />
       {jobPostingSchema && <StructuredData data={jobPostingSchema} />}
       <StructuredData data={faqSchema} />
 
-      {/* Header Info */}
-      <div className="space-y-4 border-b border-gray-150 pb-6">
-        <span className="bg-primary text-white text-xs font-bold px-2.5 py-1 rounded uppercase tracking-wider">
-          {job.category}
-        </span>
-        <h2 className="text-xl md:text-2xl font-extrabold text-secondary leading-snug">
-          {job.title}
-        </h2>
-        <div className="flex flex-wrap gap-4 text-xs text-gray-500 font-medium">
-          <div className="flex items-center space-x-1.5">
-            <Users className="w-4 h-4 text-gray-400" />
-            <span>Organisation: <strong>{job.organization}</strong></span>
-          </div>
-          {job.vacancy !== undefined && job.vacancy > 0 && (
-            <div className="flex items-center space-x-1.5">
-              <Award className="w-4 h-4 text-gray-400" />
-              <span>Vacancy: <strong>{job.vacancy} Positions</strong></span>
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_280px]">
+        <div className="self-start space-y-5">
+          <div className="overflow-hidden rounded-lg border border-border-custom bg-white shadow-sm">
+            <div className="border-b border-border-custom px-5 py-5 md:px-6">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex gap-4">
+                  <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-lg border border-border-custom bg-primary/5">
+                    <Image
+                      src="/asset/branding.png"
+                      alt={job.organization}
+                      width={72}
+                      height={72}
+                      className="h-[72px] w-[72px] object-contain"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="space-y-1">
+                      <h1 className="text-2xl md:text-3xl font-extrabold leading-tight text-secondary">
+                        {job.title}
+                      </h1>
+                      <p className="text-sm md:text-base font-semibold text-gray-600">
+                        {job.organization === 'SSC' ? 'Staff Selection Commission (SSC)' : `${job.organization}${job.organization !== job.postName ? ` (${job.postName})` : ''}`}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="rounded-md bg-primary px-2 py-1 text-[11px] font-bold leading-none text-white uppercase">
+                        New
+                      </span>
+                      <span className="rounded-md bg-green-50 px-2.5 py-1 text-[11px] font-semibold leading-none text-success">
+                        Official Notification
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => shareJob(job.title, job.slug, categorySlug)}
+                  className="inline-flex items-center justify-center gap-2 self-start rounded-md border border-border-custom bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 hover:text-primary"
+                >
+                  <Share2 className="h-4 w-4" />
+                  Share
+                </button>
+              </div>
             </div>
-          )}
-          <div className="flex items-center space-x-1.5">
-            <Calendar className="w-4 h-4 text-gray-400" />
-            <span>Updated: {new Date(job.updatedAt).toLocaleDateString()}</span>
+
+            <div className="grid gap-3 px-5 py-4 sm:grid-cols-2 md:px-6 lg:grid-cols-5">
+              {topStats.map((item) => {
+                const Icon = item.icon;
+
+                return (
+                  <div key={item.label} className="flex items-start gap-3 rounded-lg border border-border-custom bg-white px-4 py-3">
+                    <div className="mt-0.5 rounded-full bg-red-50 p-2 text-primary">
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-gray-500">{item.label}</p>
+                      <p className="text-sm font-bold leading-5 text-secondary">{item.value}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-border-custom bg-white px-5 py-4 shadow-sm md:px-6">
+            <nav className="overflow-x-auto border-b border-border-custom">
+              <div className="flex min-w-max gap-6 text-xs sm:text-sm font-bold text-gray-600">
+                {tabItems.map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setActiveTab(tab.id)}
+                    className={
+                      activeTab === tab.id
+                        ? 'border-b-2 border-primary pb-3 text-primary'
+                        : 'pb-3 transition hover:text-primary'
+                    }
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </nav>
+
+            {activeTab === 'overview' && (
+              <section id="overview" className="pt-6">
+                <h2 className="text-xl md:text-2xl font-bold text-secondary">
+                  {getOverviewTitle(job.title)}
+                </h2>
+                <p className="mt-3 max-w-[78ch] text-sm leading-7 text-gray-600">
+                  {buildOverview(job)}
+                </p>
+
+                <div className="mt-6 grid gap-x-10 gap-y-0 md:grid-cols-2">
+                  {overviewDetails.map((detail, index) => {
+                    const isWebsite = detail.label === 'Official Website' && detail.value.startsWith('http');
+                    const isLeftColumnEnd = index === 5;
+
+                    return (
+                      <div
+                        key={detail.label}
+                        className={`grid grid-cols-[140px_minmax(0,1fr)] gap-3 py-2 text-sm ${
+                          isLeftColumnEnd ? 'md:border-b-0' : 'border-b border-gray-100'
+                        } ${index >= 6 ? 'md:border-b md:border-l md:border-gray-100 md:pl-8' : ''}`}
+                      >
+                        <span className="font-semibold text-gray-600">{detail.label}</span>
+                        {isWebsite ? (
+                          <a
+                            href={detail.value}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-bold text-primary hover:underline"
+                          >
+                            {detail.value}
+                          </a>
+                        ) : (
+                          <span className="font-bold text-gray-800">{detail.value}</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-7 grid gap-4 md:grid-cols-2">
+                  {job.importantLinks?.applyOnline && (
+                    <a
+                      href={job.importantLinks.applyOnline}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-5 py-4 text-sm font-bold text-white transition hover:bg-red-900"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      Apply Online
+                    </a>
+                  )}
+
+                  {(job.notificationPdf || job.importantLinks?.downloadNotification) && (
+                    <a
+                      href={job.notificationPdf || job.importantLinks?.downloadNotification || '#'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-2 rounded-md border border-border-custom bg-white px-5 py-4 text-sm font-bold text-secondary transition hover:bg-gray-50"
+                    >
+                      <FileText className="h-4 w-4 text-primary" />
+                      Download Official Notification (PDF)
+                    </a>
+                  )}
+                </div>
+              </section>
+            )}
+
+            {activeTab === 'important-dates' && (
+              <section id="important-dates" className="pt-6">
+                <h3 className="text-lg font-bold text-secondary">Important Dates</h3>
+                <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  {topStats.slice(1, 4).map((item) => (
+                    <div key={item.label} className="rounded-lg border border-border-custom bg-white p-4">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">{item.label}</p>
+                      <p className="mt-2 text-base font-bold text-secondary">{item.value}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {activeTab === 'eligibility' && (
+              <section id="eligibility" className="pt-6">
+                <h3 className="text-lg font-bold text-secondary">Eligibility</h3>
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
+                  <div className="rounded-lg border border-border-custom bg-white p-4">
+                    <div className="flex items-center gap-2 text-primary">
+                      <GraduationCap className="h-5 w-5" />
+                      <p className="font-bold">Qualification</p>
+                    </div>
+                    <p className="mt-3 text-sm font-semibold text-gray-700">{job.qualification}</p>
+                  </div>
+
+                  <div className="rounded-lg border border-border-custom bg-white p-4">
+                    <div className="flex items-center gap-2 text-primary">
+                      <Users className="h-5 w-5" />
+                      <p className="font-bold">Age Limit</p>
+                    </div>
+                    <p className="mt-3 text-sm font-semibold text-gray-700">{job.ageLimit || 'Refer to official notification'}</p>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {activeTab === 'application-fee' && (
+              <section id="application-fee" className="pt-6">
+                <h3 className="text-lg font-bold text-secondary">Application Fee</h3>
+                <div className="mt-4 rounded-lg border border-border-custom bg-white p-4">
+                  <div className="flex items-center gap-2 text-primary">
+                    <CircleDollarSign className="h-5 w-5" />
+                    <p className="font-bold">Fee Details</p>
+                  </div>
+                  <p className="mt-3 text-sm font-semibold text-gray-700">
+                    {job.applicationFee || job.fee || 'Please refer to the official notification for category-wise fee details.'}
+                  </p>
+                </div>
+              </section>
+            )}
+
+            {activeTab === 'selection-process' && (
+              <section id="selection-process" className="pt-6">
+                <h3 className="text-lg font-bold text-secondary">Selection Process</h3>
+                <div className="mt-4 rounded-lg border border-border-custom bg-white p-4 text-sm font-semibold text-gray-700">
+                  {job.selectionProcess || 'Written examination, document verification, and other stages as mentioned in the official notice.'}
+                </div>
+              </section>
+            )}
+
+            {activeTab === 'syllabus' && (
+              <section id="syllabus" className="pt-6">
+                <h3 className="text-lg font-bold text-secondary">Syllabus</h3>
+                <div className="mt-4 rounded-lg border border-border-custom bg-white p-4 text-sm font-semibold text-gray-700">
+                  Check the official notification for subject-wise syllabus, exam pattern, and marking scheme.
+                </div>
+              </section>
+            )}
+
+            {activeTab === 'official-notification' && (
+              <section id="official-notification" className="pt-6">
+                <h3 className="text-lg font-bold text-secondary">Official Notification</h3>
+                <div className="mt-4 rounded-lg border border-border-custom bg-white p-4 text-sm font-semibold text-gray-700">
+                  Download and read the official PDF carefully before applying. It contains eligibility, dates, fee rules, reservation details, and full instructions.
+                </div>
+              </section>
+            )}
+
+            {job.tags && job.tags.length > 0 && (
+              <div className="mt-8 border-t border-border-custom pt-6">
+                <p className="text-sm font-bold text-secondary">Related tags</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {job.tags.map((tag) => (
+                    <Link
+                      key={tag}
+                      href={`/search?q=${tag}`}
+                      className="rounded-md border border-border-custom bg-gray-50 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-primary hover:text-primary"
+                    >
+                      #{tag}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
+
+        <aside className="self-start space-y-5">
+          <section className="rounded-lg border border-border-custom bg-white p-5 shadow-sm">
+            <h2 className="text-lg font-bold text-secondary">Important Links</h2>
+            <div className="mt-4 space-y-3">
+              {importantLinks.map((linkItem) => {
+                const Icon = linkItem.icon;
+
+                return (
+                  <a
+                    key={linkItem.label}
+                    href={linkItem.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-between gap-3 rounded-md px-0 py-1 transition hover:text-primary"
+                  >
+                    <span className="flex min-w-0 items-center gap-2 text-sm font-semibold text-gray-700">
+                      <Icon className="h-4 w-4 shrink-0 text-primary" />
+                      <span className="truncate">{linkItem.label}</span>
+                    </span>
+                    <span className="shrink-0 rounded-md bg-primary px-3 py-1.5 text-[11px] font-bold text-white">
+                      {linkItem.action}
+                    </span>
+                  </a>
+                );
+              })}
+            </div>
+          </section>
+
+          <section className="rounded-lg border border-border-custom bg-white p-5 shadow-sm">
+            <h2 className="text-lg font-bold text-secondary">Job Summary</h2>
+            <div className="mt-4 space-y-3">
+              {summaryDetails.map((detail) => (
+                <div key={detail.label} className="grid grid-cols-[110px_minmax(0,1fr)] gap-3 text-sm">
+                  <span className="font-semibold text-gray-600">{detail.label}</span>
+                  <span className="font-bold text-gray-800">{detail.value}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="rounded-lg border border-border-custom bg-white p-5 shadow-sm">
+            <h2 className="text-lg font-bold text-secondary">Stay Updated</h2>
+            <p className="mt-2 text-sm text-gray-600">
+              Join our Telegram channel and get instant updates for new forms, admit cards, and results.
+            </p>
+            <div className="mt-5 flex items-end justify-between gap-4">
+              <a
+                href="https://t.me"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-md bg-secondary px-4 py-3 text-sm font-bold text-white transition hover:bg-primary"
+              >
+                <Send className="h-4 w-4" />
+                Join Telegram
+              </a>
+              <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-gray-50">
+                <Send className="h-8 w-8 text-secondary" />
+              </div>
+            </div>
+          </section>
+        </aside>
       </div>
 
-      {/* Details Table */}
-      <div className="overflow-x-auto">
-        <table className="sarkari-table">
-          <thead>
-            <tr>
-              <th colSpan={2} className="text-center font-bold text-base uppercase tracking-wider bg-primary">
-                Job Overview & Important Highlights
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="font-bold w-1/3 text-gray-700">Post Name</td>
-              <td className="text-gray-900 font-semibold">{job.postName}</td>
-            </tr>
-            {job.vacancy !== undefined && job.vacancy > 0 && (
-              <tr>
-                <td className="font-bold text-gray-700">Total Vacancy</td>
-                <td className="text-green-800 font-bold">{job.vacancy}</td>
-              </tr>
-            )}
-            {job.salary && (
-              <tr>
-                <td className="font-bold text-gray-700">Salary / Pay Scale</td>
-                <td className="text-gray-900">{job.salary}</td>
-              </tr>
-            )}
-            <tr>
-              <td className="font-bold text-gray-700">Qualification Required</td>
-              <td className="text-gray-900 font-bold">{job.qualification}</td>
-            </tr>
-{job.fee && (
-  <tr>
-    <td className="font-bold text-gray-700">Fee</td>
-    <td className="text-gray-900">{job.fee}</td>
-  </tr>
-)}
-            {job.ageLimit && (
-              <tr>
-                <td className="font-bold text-gray-700">Age Limit</td>
-                <td className="text-gray-900">{job.ageLimit}</td>
-              </tr>
-            )}
-            {job.applicationFee && (
-              <tr>
-                <td className="font-bold text-gray-700">Application Fee</td>
-                <td className="text-gray-900">{job.applicationFee}</td>
-              </tr>
-            )}
-            {job.selectionProcess && (
-              <tr>
-                <td className="font-bold text-gray-700">Selection Process</td>
-                <td className="text-gray-900">{job.selectionProcess}</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Dates & Links Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Important Dates Table */}
-        <div className="overflow-x-auto">
-          <table className="sarkari-table">
-            <thead>
-              <tr>
-                <th colSpan={2} className="bg-secondary text-center uppercase text-xs tracking-wider">
-                  Important Dates
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {job.importantDates?.applyStart && (
-                <tr>
-                  <td className="font-bold text-gray-700">Application Start</td>
-                  <td className="text-gray-900">{job.importantDates.applyStart}</td>
-                </tr>
-              )}
-              {job.importantDates?.applyLastDate && (
-                <tr>
-                  <td className="font-bold text-red-600">Last Date to Apply</td>
-                  <td className="text-red-600 font-bold">{job.importantDates.applyLastDate}</td>
-                </tr>
-              )}
-              {job.importantDates?.examDate && (
-                <tr>
-                  <td className="font-bold text-gray-700">Exam Date</td>
-                  <td className="text-gray-900 font-semibold">{job.importantDates.examDate}</td>
-                </tr>
-              )}
-              {job.importantDates?.admitCardRelease && (
-                <tr>
-                  <td className="font-bold text-gray-700">Admit Card Date</td>
-                  <td className="text-gray-900">{job.importantDates.admitCardRelease}</td>
-                </tr>
-              )}
-              {job.importantDates?.resultDeclaration && (
-                <tr>
-                  <td className="font-bold text-gray-700">Result Declare Date</td>
-                  <td className="text-success font-semibold">{job.importantDates.resultDeclaration}</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Important Links Table */}
-        <div className="overflow-x-auto">
-          <table className="sarkari-table">
-            <thead>
-              <tr>
-                <th colSpan={2} className="bg-success text-center uppercase text-xs tracking-wider">
-                  Useful Official Links
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {job.importantLinks?.applyOnline && (
-                <tr>
-                  <td className="font-bold text-gray-700">Apply Online Link</td>
-                  <td>
-                    <a href={job.importantLinks.applyOnline} target="_blank" rel="noopener noreferrer" className="sarkari-link flex items-center space-x-1">
-                      <span>Click Here</span>
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                  </td>
-                </tr>
-              )}
-              {job.importantLinks?.downloadNotification && (
-                <tr>
-                  <td className="font-bold text-gray-700">Download Notification</td>
-                  <td>
-                    <a href={job.importantLinks.downloadNotification} className="sarkari-link flex items-center space-x-1">
-                      <span>Download PDF</span>
-                      <FileText className="w-3.5 h-3.5" />
-                    </a>
-                  </td>
-                </tr>
-              )}
-              {job.importantLinks?.officialWebsite && (
-                <tr>
-                  <td className="font-bold text-gray-700">Official Website</td>
-                  <td>
-                    <a href={job.importantLinks.officialWebsite} target="_blank" rel="noopener noreferrer" className="sarkari-link flex items-center space-x-1">
-                      <span>Visit Site</span>
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                  </td>
-                </tr>
-              )}
-              {job.importantLinks?.downloadAdmitCard && (
-                <tr>
-                  <td className="font-bold text-gray-700">Download Admit Card</td>
-                  <td>
-                    <a href={job.importantLinks.downloadAdmitCard} className="sarkari-link font-bold text-blue-700 flex items-center space-x-1">
-                      <span>Admit Card Link</span>
-                      <Link2 className="w-3.5 h-3.5" />
-                    </a>
-                  </td>
-                </tr>
-              )}
-              {job.importantLinks?.downloadResult && (
-                <tr>
-                  <td className="font-bold text-gray-700">Download Result</td>
-                  <td>
-                    <a href={job.importantLinks.downloadResult} className="sarkari-link font-bold text-green-700 flex items-center space-x-1">
-                      <span>Result Link</span>
-                      <Link2 className="w-3.5 h-3.5" />
-                    </a>
-                  </td>
-                </tr>
-              )}
-              {job.importantLinks?.downloadAnswerKey && (
-                <tr>
-                  <td className="font-bold text-gray-700">Download Answer Key</td>
-                  <td>
-                    <a href={job.importantLinks.downloadAnswerKey} className="sarkari-link font-bold text-yellow-700 flex items-center space-x-1">
-                      <span>Answer Key Link</span>
-                      <Link2 className="w-3.5 h-3.5" />
-                    </a>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Steps to Apply or Scheme Details */}
-      <section className="space-y-4 pt-4 border-t border-gray-100">
-        <h3 className="text-lg font-bold text-secondary">
-          How to Apply Online / Get Started:
-        </h3>
-        <ul className="list-decimal pl-5 space-y-2 text-xs sm:text-sm text-gray-600">
-          <li>Read the official notification pdf linked above before filling the form.</li>
-          <li>Ensure you have all standard documents ready: Identity Proof, Address Details, and basic credentials.</li>
-          <li>Scan and resize files for online upload: Photograph, Signature, and Left Thumb Impression if applicable.</li>
-          <li>Submit the application fee online using Debit Card, Credit Card, or Net Banking options.</li>
-          <li>Review the application preview carefully before clicking submit.</li>
-          <li>Take a printout of the final submitted application form for future reference.</li>
-        </ul>
-      </section>
-
-      {/* Internal Linking Related section */}
-      <div className="pt-6 border-t border-gray-100 flex flex-wrap gap-4 items-center text-xs">
-        <span className="font-bold text-gray-700">Related tags:</span>
-        {job.tags?.map(t => (
-          <Link key={t} href={`/search?q=${t}`} className="bg-gray-100 hover:bg-primary hover:text-white px-2.5 py-1 rounded text-gray-600 font-semibold transition-colors">
-            #{t}
-          </Link>
-        ))}
-      </div>
     </article>
   );
 }

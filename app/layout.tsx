@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Noto_Sans } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/layout/Navbar';
+import Breadcrumbs from '@/components/layout/Breadcrumbs';
 import Footer from '@/components/layout/Footer';
 import StickyMobileTabs from '@/components/layout/StickyMobileTabs';
 import { ReduxProvider } from '@/store/Provider';
@@ -29,6 +30,7 @@ export default function RootLayout({
         <ReduxProvider>
           <Navbar />
           <main className="flex-grow max-w-7xl w-full mx-auto px-4 py-6 md:py-10">
+            <Breadcrumbs />
             {children}
           </main>
           <Footer />

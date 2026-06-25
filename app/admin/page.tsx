@@ -9,9 +9,10 @@ import { RootState } from '@/store/store';
 import { setCredentials, logout } from '@/store/authSlice';
 import { api } from '@/lib/api/client';
 import { Job, Blog } from '@/types';
-import { 
-  Lock, Mail, BarChart3, Plus, Trash2, FileEdit, Eye, LogOut, 
-  Settings, CheckSquare, Upload, Calendar, Database 
+import TiptapEditor from "@/components/TiptapEditor";
+import {
+  Lock, Mail, BarChart3, Plus, Trash2, FileEdit, Eye, LogOut,
+  Settings, CheckSquare, Upload, Calendar, Database
 } from 'lucide-react';
 
 // Form Validations with Zod
@@ -43,6 +44,7 @@ const jobFormSchema = z.object({
 
 export default function AdminDashboard() {
   const [ready, setReady] = useState(false);
+  const [description, setDescription] = useState("");
   useEffect(() => {
     setReady(true);
   }, []);
@@ -379,112 +381,119 @@ export default function AdminDashboard() {
 
       {/* TAB CONTENT: JOBS */}
       {activeTab === 'jobs' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Job Form */}
-          <div className="lg:col-span-2 bg-white border border-border-custom rounded-lg p-5 shadow-sm space-y-4">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-secondary border-b pb-2">
-              {isEditing ? 'Modify / Edit Job Details' : 'Publish New Job Notification'}
-            </h3>
+        // <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        //   {/* Job Form */}
+        //   <div className="lg:col-span-2 bg-white border border-border-custom rounded-lg p-5 shadow-sm space-y-4">
+        //     <h3 className="text-sm font-bold uppercase tracking-wider text-secondary border-b pb-2">
+        //       {isEditing ? 'Modify / Edit Job Details' : 'Publish New Job Notification'}
+        //     </h3>
 
-            <form onSubmit={handleJobSubmit(onSaveJob)} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1 sm:col-span-2">
-                <label className="text-xs font-bold text-gray-500">Job Title</label>
-                <input type="text" {...registerJob('title')} className="w-full p-2 border border-border-custom rounded text-xs" placeholder="SSC MTS Exam 2026 Online Form" />
-              </div>
+        //     <form onSubmit={handleJobSubmit(onSaveJob)} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        //       <div className="space-y-1 sm:col-span-2">
+        //         <label className="text-xs font-bold text-gray-500">Job Title</label>
+        //         <input type="text" {...registerJob('title')} className="w-full p-2 border border-border-custom rounded text-xs" placeholder="SSC MTS Exam 2026 Online Form" />
+        //       </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-500">Organization</label>
-                <input type="text" {...registerJob('organization')} className="w-full p-2 border border-border-custom rounded text-xs" placeholder="SSC" />
-              </div>
+        //       <div className="space-y-1">
+        //         <label className="text-xs font-bold text-gray-500">Organization</label>
+        //         <input type="text" {...registerJob('organization')} className="w-full p-2 border border-border-custom rounded text-xs" placeholder="SSC" />
+        //       </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-500">Post Name</label>
-                <input type="text" {...registerJob('postName')} className="w-full p-2 border border-border-custom rounded text-xs" placeholder="MTS" />
-              </div>
+        //       <div className="space-y-1">
+        //         <label className="text-xs font-bold text-gray-500">Post Name</label>
+        //         <input type="text" {...registerJob('postName')} className="w-full p-2 border border-border-custom rounded text-xs" placeholder="MTS" />
+        //       </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-500">Vacancy (Count)</label>
-                <input type="number" {...registerJob('vacancy', { valueAsNumber: true })} className="w-full p-2 border border-border-custom rounded text-xs" />
-              </div>
+        //       <div className="space-y-1">
+        //         <label className="text-xs font-bold text-gray-500">Vacancy (Count)</label>
+        //         <input type="number" {...registerJob('vacancy', { valueAsNumber: true })} className="w-full p-2 border border-border-custom rounded text-xs" />
+        //       </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-500">Salary</label>
-                <input type="text" {...registerJob('salary')} className="w-full p-2 border border-border-custom rounded text-xs" placeholder="Rs. 18,000 - 22,000/-" />
-              </div>
+        //       <div className="space-y-1">
+        //         <label className="text-xs font-bold text-gray-500">Salary</label>
+        //         <input type="text" {...registerJob('salary')} className="w-full p-2 border border-border-custom rounded text-xs" placeholder="Rs. 18,000 - 22,000/-" />
+        //       </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-500">Required Qualification</label>
-                <input type="text" {...registerJob('qualification')} className="w-full p-2 border border-border-custom rounded text-xs" placeholder="10th Pass / 12th Pass / Graduation" />
-              </div>
+        //       <div className="space-y-1">
+        //         <label className="text-xs font-bold text-gray-500">Required Qualification</label>
+        //         <input type="text" {...registerJob('qualification')} className="w-full p-2 border border-border-custom rounded text-xs" placeholder="10th Pass / 12th Pass / Graduation" />
+        //       </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-500">Category</label>
-                <select {...registerJob('category')} className="w-full p-2 border border-border-custom rounded text-xs">
-                  <option value="Latest Job">Latest Job</option>
-                  <option value="Admit Card">Admit Card</option>
-                  <option value="Result">Result</option>
-                  <option value="Answer Key">Answer Key</option>
-                  <option value="Syllabus">Syllabus</option>
-                  <option value="Government Scheme">Government Scheme</option>
-                </select>
-              </div>
+        //       <div className="space-y-1">
+        //         <label className="text-xs font-bold text-gray-500">Category</label>
+        //         <select {...registerJob('category')} className="w-full p-2 border border-border-custom rounded text-xs">
+        //           <option value="Latest Job">Latest Job</option>
+        //           <option value="Admit Card">Admit Card</option>
+        //           <option value="Result">Result</option>
+        //           <option value="Answer Key">Answer Key</option>
+        //           <option value="Syllabus">Syllabus</option>
+        //           <option value="Government Scheme">Government Scheme</option>
+        //         </select>
+        //       </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-500">State Location</label>
-                <input type="text" {...registerJob('state')} className="w-full p-2 border border-border-custom rounded text-xs" placeholder="Central / Bihar / Delhi" />
-              </div>
+        //       <div className="space-y-1">
+        //         <label className="text-xs font-bold text-gray-500">State Location</label>
+        //         <input type="text" {...registerJob('state')} className="w-full p-2 border border-border-custom rounded text-xs" placeholder="Central / Bihar / Delhi" />
+        //       </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-500">Apply Online Link</label>
-                <input type="text" {...registerJob('applyOnline')} className="w-full p-2 border border-border-custom rounded text-xs" placeholder="https://..." />
-              </div>
+        //       <div className="space-y-1">
+        //         <label className="text-xs font-bold text-gray-500">Apply Online Link</label>
+        //         <input type="text" {...registerJob('applyOnline')} className="w-full p-2 border border-border-custom rounded text-xs" placeholder="https://..." />
+        //       </div>
 
-              <div className="space-y-1 sm:col-span-2">
-                <label className="text-xs font-bold text-gray-500">SEO Meta Title</label>
-                <input type="text" {...registerJob('seoTitle')} className="w-full p-2 border border-border-custom rounded text-xs" />
-              </div>
+        //       <div className="space-y-1 sm:col-span-2">
+        //         <label className="text-xs font-bold text-gray-500">SEO Meta Title</label>
+        //         <input type="text" {...registerJob('seoTitle')} className="w-full p-2 border border-border-custom rounded text-xs" />
+        //       </div>
 
-              <div className="space-y-1 sm:col-span-2">
-                <label className="text-xs font-bold text-gray-500">SEO Meta Description</label>
-                <textarea {...registerJob('seoDescription')} className="w-full p-2 border border-border-custom rounded text-xs h-16" />
-              </div>
+        //       <div className="space-y-1 sm:col-span-2">
+        //         <label className="text-xs font-bold text-gray-500">SEO Meta Description</label>
+        //         <textarea {...registerJob('seoDescription')} className="w-full p-2 border border-border-custom rounded text-xs h-16" />
+        //       </div>
 
-              <div className="sm:col-span-2 pt-2 flex space-x-2">
-                <button type="submit" className="bg-primary hover:bg-[#600000] text-white px-4 py-2 rounded text-xs font-bold">
-                  {isEditing ? 'Update Job Details' : 'Publish Job'}
-                </button>
-                {isEditing && (
-                  <button type="button" onClick={() => setIsEditing(null)} className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded text-xs font-bold">
-                    Cancel Edit
-                  </button>
-                )}
-              </div>
-            </form>
-          </div>
+        //       <div className="sm:col-span-2 pt-2 flex space-x-2">
+        //         <button type="submit" className="bg-primary hover:bg-[#600000] text-white px-4 py-2 rounded text-xs font-bold">
+        //           {isEditing ? 'Update Job Details' : 'Publish Job'}
+        //         </button>
+        //         {isEditing && (
+        //           <button type="button" onClick={() => setIsEditing(null)} className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded text-xs font-bold">
+        //             Cancel Edit
+        //           </button>
+        //         )}
+        //       </div>
+        //     </form>
+        //   </div>
 
-          {/* Job List */}
-          <div className="bg-white border border-border-custom rounded-lg p-5 shadow-sm space-y-4">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-secondary border-b pb-2">Active Listings</h3>
-            <div className="space-y-3 max-h-[500px] overflow-y-auto">
-              {jobs.map((job) => (
-                <div key={job._id} className="border border-gray-100 p-3 rounded space-y-2 hover:border-gray-300">
-                  <span className="text-[9px] uppercase font-extrabold text-primary bg-red-50 px-1.5 py-0.5 rounded">{job.category}</span>
-                  <h4 className="font-bold text-xs text-gray-700 leading-snug">{job.title}</h4>
-                  <div className="flex space-x-2 pt-1 border-t border-gray-50">
-                    <button onClick={() => handleEditSetup(job)} className="text-[10px] text-secondary font-bold flex items-center space-x-0.5 hover:underline">
-                      <FileEdit className="w-3.5 h-3.5" />
-                      <span>Edit</span>
-                    </button>
-                    <button onClick={() => handleDeleteJob(job._id)} className="text-[10px] text-status-danger font-bold flex items-center space-x-0.5 hover:underline">
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>Delete</span>
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        //   {/* Job List */}
+        //   <div className="bg-white border border-border-custom rounded-lg p-5 shadow-sm space-y-4">
+        //     <h3 className="text-sm font-bold uppercase tracking-wider text-secondary border-b pb-2">Active Listings</h3>
+        //     <div className="space-y-3 max-h-[500px] overflow-y-auto">
+        //       {jobs.map((job) => (
+        //         <div key={job._id} className="border border-gray-100 p-3 rounded space-y-2 hover:border-gray-300">
+        //           <span className="text-[9px] uppercase font-extrabold text-primary bg-red-50 px-1.5 py-0.5 rounded">{job.category}</span>
+        //           <h4 className="font-bold text-xs text-gray-700 leading-snug">{job.title}</h4>
+        //           <div className="flex space-x-2 pt-1 border-t border-gray-50">
+        //             <button onClick={() => handleEditSetup(job)} className="text-[10px] text-secondary font-bold flex items-center space-x-0.5 hover:underline">
+        //               <FileEdit className="w-3.5 h-3.5" />
+        //               <span>Edit</span>
+        //             </button>
+        //             <button onClick={() => handleDeleteJob(job._id)} className="text-[10px] text-status-danger font-bold flex items-center space-x-0.5 hover:underline">
+        //               <Trash2 className="w-3.5 h-3.5" />
+        //               <span>Delete</span>
+        //             </button>
+        //           </div>
+        //         </div>
+        //       ))}
+        //     </div>
+        //   </div>
+        // </div>
+          <TiptapEditor
+            value={description}
+            onChange={(value) => {
+              setDescription(value);
+            }}
+          />
+        
       )}
 
       {/* TAB CONTENT: BLOGS */}
