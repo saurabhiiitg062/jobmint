@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { Job } from '@/types';
 import StructuredData from '@/components/seo/StructuredData';
+import DynamicTable from '@/components/DynamicTable';
 
 interface JobDetailViewProps {
   job: Job;
@@ -306,7 +307,8 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
     { id: 'application-fee', label: 'Application Fee' },
     { id: 'selection-process', label: 'Selection Process' },
     { id: 'syllabus', label: 'Syllabus' },
-    { id: 'official-notification', label: 'Official Notification' },
+    { id: 'vacancy-details', label: 'Vacancy Details' },
+    { id: 'cutoff', label: 'Cutoff' },
   ];
 
   return (
@@ -537,12 +539,37 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
               </section>
             )}
 
-            {activeTab === 'official-notification' && (
-              <section id="official-notification" className="pt-6">
-                <h3 className="text-lg font-bold text-secondary">Official Notification</h3>
-                <div className="mt-4 rounded-lg border border-border-custom bg-white p-4 text-sm font-semibold text-gray-700">
-                  Download and read the official PDF carefully before applying. It contains eligibility, dates, fee rules, reservation details, and full instructions.
-                </div>
+            {activeTab === 'vacancy-details' && (
+              <section id="vacancy-details" className="pt-6">
+                <h3 className="text-lg font-bold text-secondary">Vacancy Details</h3>
+                {job.tables && job.tables.length > 0 ? (
+                  <div className="mt-4 space-y-4">
+                    {job.tables.filter(table => table.title.toLowerCase().includes('vacancy')).map((table, index) => (
+                      <DynamicTable key={index} table={table} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="mt-4 rounded-lg border border-border-custom bg-white p-4 text-sm font-semibold text-gray-700">
+                    No vacancy details available. Please check the official notification.
+                  </div>
+                )}
+              </section>
+            )}
+
+            {activeTab === 'cutoff' && (
+              <section id="cutoff" className="pt-6">
+                <h3 className="text-lg font-bold text-secondary">Cutoff Marks</h3>
+                {job.tables && job.tables.length > 0 ? (
+                  <div className="mt-4 space-y-4">
+                    {job.tables.filter(table => table.title.toLowerCase().includes('cutoff')).map((table, index) => (
+                      <DynamicTable key={index} table={table} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="mt-4 rounded-lg border border-border-custom bg-white p-4 text-sm font-semibold text-gray-700">
+                    No cutoff details available. Please check the official notification.
+                  </div>
+                )}
               </section>
             )}
 

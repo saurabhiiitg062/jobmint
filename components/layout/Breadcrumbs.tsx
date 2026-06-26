@@ -63,7 +63,7 @@ export default function Breadcrumbs() {
   return (
     <nav
       aria-label="Breadcrumb"
-      className="mb-5 rounded-2xl border border-[#e8e6e1] bg-white px-4 py-3 text-sm text-slate-600 shadow-[0_12px_28px_rgba(15,23,42,0.04)]"
+      className="mb-5 border border-[#e8e6e1] bg-white px-4 py-3 text-sm text-slate-600 shadow-[0_12px_28px_rgba(15,23,42,0.04)]"
     >
       <ol className="flex flex-wrap items-center gap-2">
         {crumbs.map((crumb, index) => (

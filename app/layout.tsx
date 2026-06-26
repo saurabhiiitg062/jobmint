@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Noto_Sans } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/layout/Navbar';
+import BreakingNews from '@/components/layout/BreakingNews';
 import Breadcrumbs from '@/components/layout/Breadcrumbs';
 import Footer from '@/components/layout/Footer';
 import StickyMobileTabs from '@/components/layout/StickyMobileTabs';
@@ -14,7 +15,7 @@ const notoSans = Noto_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'SelectionSure - Latest Government Jobs, Admit Cards & Sarkari Results 2026',
+  title: 'SelectionSure - Latest Government Jobs, Admit Cards & Sarkari Results',
   description: 'Get real-time updates for latest government jobs, SSC, UPSC, Railway (RRB) exams, Admit Cards, Sarkari Results, Syllabi, and Answer Keys on SelectionSure.',
   keywords: 'Sarkari Result, Government Jobs, Free Job Alert, SSC, UPSC, Railway Jobs, Admit Card, Answer Key',
 };
@@ -28,9 +29,14 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${notoSans.variable} antialiased min-h-screen flex flex-col pb-14 md:pb-0`}>
         <ReduxProvider>
-          <Navbar />
+          <div className="sticky top-0 z-50">
+            <Navbar />
+            <BreakingNews />
+            <div className="max-w-7xl w-full mx-auto px-4">
+              <Breadcrumbs />
+            </div>
+          </div>
           <main className="flex-grow max-w-7xl w-full mx-auto px-4 py-6 md:py-10">
-            <Breadcrumbs />
             {children}
           </main>
           <Footer />

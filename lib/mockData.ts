@@ -7,7 +7,7 @@ export const mockJobs: Job[] = [
     title: 'SSC MTS & Havaldar Exam 2026 Online Form',
     slug: 'ssc-mts-havaldar-exam-2026-online-form',
     organization: 'SSC',
-    postName: 'MTS & Havaldar',
+    postName: 'MTS & Havildar',
     vacancy: 8326,
     salary: 'Rs. 18,000 - 22,000/-',
     qualification: '10th Pass',
@@ -19,7 +19,58 @@ export const mockJobs: Job[] = [
     status: 'published',
     publishedAt: '2026-06-20T12:00:00Z',
     createdAt: '2026-06-20T12:00:00Z',
-    updatedAt: '2026-06-20T12:00:00Z'
+    updatedAt: '2026-06-20T12:00:00Z',
+    tables: [
+      {
+        title: 'Vacancy Details',
+        columns: ['Post', 'Department', 'UR', 'OBC', 'EWS', 'SC', 'ST', 'Total'],
+        rows: [
+          ['MTS', 'Various Ministries', 2800, 1900, 700, 1100, 700, 7200],
+          ['Havildar', 'CBIC', 400, 300, 100, 200, 160, 1160]
+        ]
+      },
+      {
+        title: 'Application Fee',
+        columns: ['Category', 'Fee'],
+        rows: [
+          ['General', '₹100'],
+          ['OBC', '₹100'],
+          ['SC/ST', 'Free'],
+          ['Women', 'Free']
+        ]
+      },
+      {
+        title: 'Age Limit',
+        columns: ['Category', 'Age Limit'],
+        rows: [
+          ['General', '18-25 years'],
+          ['OBC', '18-28 years'],
+          ['SC/ST', '18-30 years']
+        ]
+      },
+      {
+        title: 'Cutoff Marks (Previous Year)',
+        columns: ['Category', 'Cutoff', 'Qualifying Marks'],
+        rows: [
+          ['General', '110.50', '100'],
+          ['OBC', '103.25', '90'],
+          ['EWS', '98.75', '90'],
+          ['SC', '91.50', '80'],
+          ['ST', '87.25', '80']
+        ]
+      },
+      {
+        title: 'Exam Pattern',
+        columns: ['Subject', 'Questions', 'Marks', 'Duration'],
+        rows: [
+          ['General Intelligence & Reasoning', '25', '50', '60 mins'],
+          ['Numerical Aptitude', '25', '50', '60 mins'],
+          ['General English', '25', '50', '60 mins'],
+          ['General Awareness', '25', '50', '60 mins'],
+          ['Total', '100', '200', '60 mins']
+        ]
+      }
+    ]
   },
   {
     _id: '2',

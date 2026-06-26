@@ -14,10 +14,47 @@ const generateSlug = (text: string) => {
     .replace(/\-\-+/g, '-'); // Replace multiple - with single -
 };
 
+// Validate tables structure
+const validateTables = (tables: any[]) => {
+  if (!tables || !Array.isArray(tables)) return true; // Tables are optional
+  
+  for (const table of tables) {
+    if (!table.title || typeof table.title !== 'string') {
+      return false;
+    }
+    if (!table.columns || !Array.isArray(table.columns) || table.columns.length === 0) {
+      return false;
+    }
+    if (!table.rows || !Array.isArray(table.rows) || table.rows.length === 0) {
+      return false;
+    }
+    // Ensure each row has the same number of columns
+    for (const row of table.rows) {
+      if (!Array.isArray(row) || row.length !== table.columns.length) {
+        return false;
+      }
+    }
+  }
+  return true;
+};
+
 // Create Job
 export const createJob = async (req: Request, res: Response) => {
   try {
     const jobData = { ...req.body };
+    
+    // Validate tables if provided
+    if (jobData.tables && !validateTables(jobData.tables)) {
+      return res.status(400).json({ message: 'Invalid tables structure. Each table must have a title, at least one column, and at least one row with matching column count.' });
+    }
+    
+    // Filter out empty tables
+    if (jobData.tables) {
+      jobData.tables = jobData.tables.filter((table: any) => 
+        table.title && table.columns && table.columns.length > 0 && table.rows && table.rows.length > 0
+      );
+    }
+    
     if (!jobData.slug) {
       jobData.slug = generateSlug(jobData.title);
     }
@@ -52,6 +89,19 @@ export const updateJob = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
     const jobData = { ...req.body };
+    
+    // Validate tables if provided
+    if (jobData.tables && !validateTables(jobData.tables)) {
+      return res.status(400).json({ message: 'Invalid tables structure. Each table must have a title, at least one column, and at least one row with matching column count.' });
+    }
+    
+    // Filter out empty tables
+    if (jobData.tables) {
+      jobData.tables = jobData.tables.filter((table: any) => 
+        table.title && table.columns && table.columns.length > 0 && table.rows && table.rows.length > 0
+      );
+    }
+    
     if (jobData.title && !jobData.slug) {
       jobData.slug = generateSlug(jobData.title);
     }

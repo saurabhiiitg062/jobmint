@@ -40,7 +40,12 @@ const JobSchema = new Schema({
   featuredImage: { type: String },
   status: { type: String, enum: ['draft', 'published'], default: 'published' },
   views: { type: Number, default: 0 },
-  publishedAt: { type: Date, default: Date.now }
+  publishedAt: { type: Date, default: Date.now },
+  tables: [{
+    title: { type: String, required: true },
+    columns: [{ type: String, required: true }],
+    rows: [[Schema.Types.Mixed]]
+  }]
 }, {
   timestamps: true
 });

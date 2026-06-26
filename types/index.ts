@@ -1,3 +1,9 @@
+export interface DynamicTable {
+  title: string;
+  columns: string[];
+  rows: any[][];
+}
+
 export interface Job {
   _id: string;
   title: string;
@@ -11,6 +17,7 @@ export interface Job {
   ageLimit?: string;
   applicationFee?: string;
   selectionProcess?: string;
+  description?: string;
   importantDates?: {
     applyStart?: string;
     applyLastDate?: string;
@@ -44,6 +51,7 @@ export interface Job {
   publishedAt: string;
   createdAt: string;
   updatedAt: string;
+  tables?: DynamicTable[];
 }
 
 export interface Blog {
