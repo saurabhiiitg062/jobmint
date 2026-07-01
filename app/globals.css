@@ -40,6 +40,7 @@ body {
   color: #333333;
   font-family: var(--font-sans);
   line-height: 1.6;
+  overflow-x: hidden;
 }
 
 /* Custom styles for Sarkari-style tables */
@@ -55,6 +56,8 @@ body {
   font-size: 14px;
   text-align: left;
   border: 1px solid var(--border);
+  white-space: normal;
+  word-break: break-word;
 }
 
 .sarkari-table td {
@@ -62,6 +65,8 @@ body {
   font-size: 14px;
   border: 1px solid var(--border);
   background-color: white;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .sarkari-table tr:nth-child(even) td {

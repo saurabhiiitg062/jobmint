@@ -35,8 +35,9 @@ export default function Navbar() {
   return (
     <header className="w-full">
       {/* Top Bar */}
-      <div className="bg-primary text-white text-xs py-2 px-4 flex justify-between items-center font-medium">
-        <div className="flex items-center space-x-2 overflow-hidden">
+      <div className="bg-primary px-4 py-2 text-xs font-medium text-white">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center space-x-2 overflow-hidden">
           <Bell className="w-3.5 h-3.5 animate-pulse text-accent shrink-0" />
           <span className="truncate">
             Latest Update: SSC MTS 2026 Notification out now!
@@ -65,16 +66,17 @@ export default function Navbar() {
             Admin Portal
           </Link>
         </div>
+        </div>
       </div>
 
       {/* Main Header */}
-      <div className="bg-white border-b border-border-custom py-4 px-4 max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+      <div className="mx-auto flex max-w-7xl flex-col gap-4 border-b border-border-custom bg-white px-4 py-4 md:flex-row md:items-center md:justify-between">
         {/* Logo */}
         <Link
           href="/"
-          className="flex items-center gap-3 text-center md:text-left"
+          className="flex w-full min-w-0 items-center gap-3 text-left md:w-auto"
         >
-          <div className="bg-primary p-2 rounded-lg flex items-center justify-center">
+          <div className="flex shrink-0 items-center justify-center rounded-lg bg-primary p-2">
             <Image
               src={logo}
               alt="SelectionSure Logo"
@@ -85,22 +87,22 @@ export default function Navbar() {
             />
           </div>
 
-          <div>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-primary tracking-tight leading-none">
+          <div className="min-w-0">
+            <h1 className="break-words text-[clamp(1.9rem,5vw,2.2rem)] font-extrabold leading-none tracking-tight text-primary">
               SelectionSure
             </h1>
 
-            <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mt-1">
+            <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.22em] text-gray-500 sm:tracking-widest">
               Sarkari Jobs & Exam Updates
             </p>
           </div>
         </Link>
 
         {/* Search */}
-        <div className="flex items-center gap-3 w-full md:w-auto max-w-md">
+        <div className="flex w-full max-w-md items-center gap-3 self-stretch md:w-auto md:self-auto">
           <form
             onSubmit={handleSearchSubmit}
-            className="relative flex-1"
+            className="relative min-w-0 flex-1"
           >
             <input
               type="text"
@@ -124,7 +126,7 @@ export default function Navbar() {
 
           <button
             onClick={() => setMobileMenuOpen((prev) => !prev)}
-            className="md:hidden p-2 border border-border-custom rounded-md text-gray-600 hover:bg-gray-100 transition"
+            className="shrink-0 rounded-md border border-border-custom p-2 text-gray-600 transition hover:bg-gray-100 md:hidden"
           >
             {mobileMenuOpen ? (
               <X className="w-5 h-5" />

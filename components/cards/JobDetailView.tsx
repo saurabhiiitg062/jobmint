@@ -423,17 +423,17 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
       : undefined;
 
   return (
-    <article className="space-y-5">
+    <article className="space-y-5 overflow-x-hidden">
       <StructuredData data={breadcrumbSchema} />
       {jobPostingSchema && <StructuredData data={jobPostingSchema} />}
       <StructuredData data={faqSchema} />
 
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_280px]">
-        <div className="self-start space-y-5">
+        <div className="min-w-0 self-start space-y-5">
           <div className="overflow-hidden rounded-lg border border-border-custom bg-white shadow-sm">
             <div className="border-b border-border-custom px-5 py-5 md:px-6">
               <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-                <div className="flex flex-col gap-4 sm:flex-row">
+                <div className="flex min-w-0 flex-col gap-4 sm:flex-row">
                   <div className="flex h-20 w-20 shrink-0 items-center justify-center self-start rounded-lg border border-border-custom bg-primary/5 sm:h-24 sm:w-24">
                     <Image
                       src="/asset/branding.png"
@@ -443,12 +443,12 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
                       className="h-[60px] w-[60px] object-contain sm:h-[72px] sm:w-[72px]"
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="min-w-0 space-y-2">
                     <div className="space-y-1">
-                      <h1 className="text-2xl md:text-3xl font-extrabold leading-tight text-secondary">
+                      <h1 className="break-words text-2xl font-extrabold leading-tight text-secondary md:text-3xl">
                         {job.title}
                       </h1>
-                      <p className="text-sm md:text-base font-semibold text-gray-600">
+                      <p className="break-words text-sm font-semibold text-gray-600 md:text-base">
                         {job.organization === 'SSC' ? 'Staff Selection Commission (SSC)' : `${job.organization}${job.organization !== job.postName ? ` (${job.postName})` : ''}`}
                       </p>
                     </div>
@@ -555,18 +555,18 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
                             isLeftColumnEnd ? 'md:border-b-0' : 'border-b border-gray-100'
                           } ${index >= 6 ? 'md:border-b md:border-l md:border-gray-100 md:pl-8' : ''}`}
                         >
-                          <span className="font-semibold text-gray-600 sm:pt-0.5">{detail.label}</span>
+                    <span className="font-semibold text-gray-600 sm:pt-0.5">{detail.label}</span>
                           {isWebsite ? (
                             <a
                               href={detail.value}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="font-bold text-primary hover:underline"
+                              className="break-words font-bold text-primary hover:underline"
                             >
                               {detail.value}
                             </a>
                           ) : (
-                            <span className="font-bold text-gray-800">{detail.value}</span>
+                            <span className="break-words font-bold text-gray-800">{detail.value}</span>
                           )}
                         </div>
                       );
@@ -760,7 +760,7 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
           </div>
         </div>
 
-        <aside className="self-start space-y-5">
+        <aside className="min-w-0 self-start space-y-5">
           <section className="rounded-lg border border-border-custom bg-white p-5 shadow-sm">
             <h2 className="text-lg font-bold text-secondary">Important Links</h2>
             <div className="mt-4 space-y-3">
@@ -792,9 +792,9 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
             <h2 className="text-lg font-bold text-secondary">Job Summary</h2>
             <div className="mt-4 space-y-3">
               {summaryDetails.map((detail) => (
-                <div key={detail.label} className="grid grid-cols-[110px_minmax(0,1fr)] gap-3 text-sm">
+                <div key={detail.label} className="grid grid-cols-1 gap-1 text-sm sm:grid-cols-[110px_minmax(0,1fr)] sm:gap-3">
                   <span className="font-semibold text-gray-600">{detail.label}</span>
-                  <span className="font-bold text-gray-800">{detail.value}</span>
+                  <span className="break-words font-bold text-gray-800">{detail.value}</span>
                 </div>
               ))}
             </div>
@@ -805,7 +805,7 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
             <p className="mt-2 text-sm text-gray-600">
               Join our Telegram channel and get instant updates for new forms, admit cards, and results.
             </p>
-            <div className="mt-5 flex items-end justify-between gap-4">
+            <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <a
                 href="https://t.me"
                 target="_blank"
@@ -815,7 +815,7 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
                 <Send className="h-4 w-4" />
                 Join Telegram
               </a>
-              <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-gray-50">
+              <div className="flex h-20 w-20 items-center justify-center self-end rounded-lg bg-gray-50 sm:self-auto">
                 <Send className="h-8 w-8 text-secondary" />
               </div>
             </div>
