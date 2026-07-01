@@ -19,12 +19,26 @@ const MONGODB_URI = process.env.MONGODB_URI;
 app.use(helmet({
   contentSecurityPolicy: false // Allow dynamic scripts/styles if next client embeds it
 }));
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://jobmint-ivory.vercel.app"
+];
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || '*',
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true
 }));
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Sanitize inputs to prevent MongoDB operator injection
 app.use(mongoSanitize());
