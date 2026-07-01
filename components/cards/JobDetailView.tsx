@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type TouchEvent } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -16,8 +16,7 @@ import {
   ScrollText,
   Send,
   Share2,
-  Users,
-  Globe2
+  Users
 } from 'lucide-react';
 import { Job } from '@/types';
 import StructuredData from '@/components/seo/StructuredData';
@@ -102,8 +101,12 @@ function shareJob(title: string, slug: string, categorySlug: JobDetailViewProps[
 
 export default function JobDetailView({ job, categorySlug }: JobDetailViewProps) {
   const [activeTab, setActiveTab] = useState('overview');
+  const [tabTransition, setTabTransition] = useState<'idle' | 'leaving' | 'entering'>('idle');
+  const [transitionDirection, setTransitionDirection] = useState<-1 | 1>(1);
+  const [swipeOffset, setSwipeOffset] = useState(0);
   const tabButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const swipeStartRef = useRef<{ x: number; y: number } | null>(null);
+  const transitionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
@@ -315,6 +318,27 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
 
   const tabOrder = tabItems.map((tab) => tab.id);
 
+  const startTabTransition = (nextTab: string, direction: -1 | 1) => {
+    if (nextTab === activeTab) return;
+
+    if (transitionTimeoutRef.current) {
+      clearTimeout(transitionTimeoutRef.current);
+    }
+
+    setTransitionDirection(direction);
+    setSwipeOffset(0);
+    setTabTransition('leaving');
+
+    transitionTimeoutRef.current = setTimeout(() => {
+      setActiveTab(nextTab);
+      setTabTransition('entering');
+
+      transitionTimeoutRef.current = setTimeout(() => {
+        setTabTransition('idle');
+      }, 180);
+    }, 180);
+  };
+
   const moveTab = (direction: -1 | 1) => {
     const currentIndex = tabOrder.indexOf(activeTab);
     if (currentIndex === -1) return;
@@ -322,15 +346,31 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
     const nextIndex = currentIndex + direction;
     if (nextIndex < 0 || nextIndex >= tabOrder.length) return;
 
-    setActiveTab(tabOrder[nextIndex]);
+    startTabTransition(tabOrder[nextIndex], direction);
   };
 
-  const handleSwipeStart = (event: React.TouchEvent<HTMLElement>) => {
+  const handleSwipeStart = (event: TouchEvent<HTMLElement>) => {
     const touch = event.touches[0];
     swipeStartRef.current = { x: touch.clientX, y: touch.clientY };
+    setSwipeOffset(0);
   };
 
-  const handleSwipeEnd = (event: React.TouchEvent<HTMLElement>) => {
+  const handleSwipeMove = (event: TouchEvent<HTMLElement>) => {
+    const start = swipeStartRef.current;
+    if (!start) return;
+
+    const touch = event.touches[0];
+    const deltaX = touch.clientX - start.x;
+    const deltaY = touch.clientY - start.y;
+
+    if (Math.abs(deltaX) <= Math.abs(deltaY)) {
+      return;
+    }
+
+    setSwipeOffset(Math.max(-72, Math.min(72, deltaX)));
+  };
+
+  const handleSwipeEnd = (event: TouchEvent<HTMLElement>) => {
     const start = swipeStartRef.current;
     if (!start) return;
 
@@ -341,6 +381,7 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
     swipeStartRef.current = null;
 
     if (Math.abs(deltaX) < 45 || Math.abs(deltaX) < Math.abs(deltaY)) {
+      setSwipeOffset(0);
       return;
     }
 
@@ -354,6 +395,32 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
       block: 'nearest',
     });
   }, [activeTab]);
+
+  useEffect(() => {
+    return () => {
+      if (transitionTimeoutRef.current) {
+        clearTimeout(transitionTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const tabPanelClassName =
+    tabTransition === 'leaving'
+      ? transitionDirection === 1
+        ? '-translate-x-8 opacity-0'
+        : 'translate-x-8 opacity-0'
+      : tabTransition === 'entering'
+        ? transitionDirection === 1
+          ? 'translate-x-8 opacity-0'
+          : '-translate-x-8 opacity-0'
+        : 'translate-x-0 opacity-100';
+
+  const tabPanelStyle =
+    tabTransition === 'idle' && swipeOffset !== 0
+      ? {
+          transform: `translateX(${swipeOffset}px)`,
+        }
+      : undefined;
 
   return (
     <article className="space-y-5">
@@ -430,6 +497,7 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
             <nav
               className="overflow-x-auto border-b border-border-custom touch-pan-x"
               onTouchStart={handleSwipeStart}
+              onTouchMove={handleSwipeMove}
               onTouchEnd={handleSwipeEnd}
             >
               <div className="flex min-w-max gap-4 text-xs font-bold text-gray-600 sm:gap-6 sm:text-sm">
@@ -437,7 +505,13 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
                   <button
                     key={tab.id}
                     type="button"
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={() => {
+                      const currentIndex = tabOrder.indexOf(activeTab);
+                      const nextIndex = tabOrder.indexOf(tab.id);
+                      const direction = nextIndex > currentIndex ? 1 : -1;
+
+                      startTabTransition(tab.id, direction);
+                    }}
                     ref={(node) => {
                       tabButtonRefs.current[tab.id] = node;
                     }}
@@ -453,75 +527,82 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
               </div>
             </nav>
 
-            {activeTab === 'overview' && (
-              <section id="overview" className="pt-6">
-                <h2 className="text-xl md:text-2xl font-bold text-secondary">
-                  {getOverviewTitle(job.title)}
-                </h2>
-                <p className="mt-3 max-w-[78ch] text-sm leading-7 text-gray-600">
-                  {job.exam?.overview || buildOverview(job)}
-                </p>
+            <div
+              className={`pt-6 transition-all duration-200 ease-out will-change-transform ${tabPanelClassName}`}
+              style={tabPanelStyle}
+              onTouchStart={handleSwipeStart}
+              onTouchMove={handleSwipeMove}
+              onTouchEnd={handleSwipeEnd}
+            >
+              {activeTab === 'overview' && (
+                <section id="overview">
+                  <h2 className="text-xl md:text-2xl font-bold text-secondary">
+                    {getOverviewTitle(job.title)}
+                  </h2>
+                  <p className="mt-3 max-w-[78ch] text-sm leading-7 text-gray-600">
+                    {job.exam?.overview || buildOverview(job)}
+                  </p>
 
-                <div className="mt-6 grid gap-x-10 gap-y-0 md:grid-cols-2">
-                  {overviewDetails.map((detail, index) => {
-                    const isWebsite = detail.label === 'Official Website' && detail.value.startsWith('http');
-                    const isLeftColumnEnd = index === 5;
+                  <div className="mt-6 grid gap-x-10 gap-y-0 md:grid-cols-2">
+                    {overviewDetails.map((detail, index) => {
+                      const isWebsite = detail.label === 'Official Website' && detail.value.startsWith('http');
+                      const isLeftColumnEnd = index === 5;
 
-                    return (
-                      <div
-                        key={detail.label}
-                        className={`grid grid-cols-1 gap-2 py-2 text-sm sm:grid-cols-[140px_minmax(0,1fr)] sm:gap-3 ${
-                          isLeftColumnEnd ? 'md:border-b-0' : 'border-b border-gray-100'
-                        } ${index >= 6 ? 'md:border-b md:border-l md:border-gray-100 md:pl-8' : ''}`}
+                      return (
+                        <div
+                          key={detail.label}
+                          className={`grid grid-cols-1 gap-2 py-2 text-sm sm:grid-cols-[140px_minmax(0,1fr)] sm:gap-3 ${
+                            isLeftColumnEnd ? 'md:border-b-0' : 'border-b border-gray-100'
+                          } ${index >= 6 ? 'md:border-b md:border-l md:border-gray-100 md:pl-8' : ''}`}
+                        >
+                          <span className="font-semibold text-gray-600 sm:pt-0.5">{detail.label}</span>
+                          {isWebsite ? (
+                            <a
+                              href={detail.value}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-bold text-primary hover:underline"
+                            >
+                              {detail.value}
+                            </a>
+                          ) : (
+                            <span className="font-bold text-gray-800">{detail.value}</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="mt-7 grid gap-4 sm:grid-cols-2">
+                    {job.importantLinks?.applyOnline && (
+                      <a
+                        href={job.importantLinks.applyOnline}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-5 py-4 text-sm font-bold text-white transition hover:bg-red-900"
                       >
-                        <span className="font-semibold text-gray-600 sm:pt-0.5">{detail.label}</span>
-                        {isWebsite ? (
-                          <a
-                            href={detail.value}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="font-bold text-primary hover:underline"
-                          >
-                            {detail.value}
-                          </a>
-                        ) : (
-                          <span className="font-bold text-gray-800">{detail.value}</span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+                        <ExternalLink className="h-4 w-4" />
+                        Apply Online
+                      </a>
+                    )}
 
-                <div className="mt-7 grid gap-4 sm:grid-cols-2">
-                  {job.importantLinks?.applyOnline && (
-                    <a
-                      href={job.importantLinks.applyOnline}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-5 py-4 text-sm font-bold text-white transition hover:bg-red-900"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                      Apply Online
-                    </a>
-                  )}
+                    {(job.notificationPdf || job.importantLinks?.downloadNotification) && (
+                      <a
+                        href={job.notificationPdf || job.importantLinks?.downloadNotification || '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center gap-2 rounded-md border border-border-custom bg-white px-5 py-4 text-sm font-bold text-secondary transition hover:bg-gray-50"
+                      >
+                        <FileText className="h-4 w-4 text-primary" />
+                        Download Official Notification (PDF)
+                      </a>
+                    )}
+                  </div>
+                </section>
+              )}
 
-                  {(job.notificationPdf || job.importantLinks?.downloadNotification) && (
-                    <a
-                      href={job.notificationPdf || job.importantLinks?.downloadNotification || '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center gap-2 rounded-md border border-border-custom bg-white px-5 py-4 text-sm font-bold text-secondary transition hover:bg-gray-50"
-                    >
-                      <FileText className="h-4 w-4 text-primary" />
-                      Download Official Notification (PDF)
-                    </a>
-                  )}
-                </div>
-              </section>
-            )}
-
-            {activeTab === 'important-dates' && (
-              <section id="important-dates" className="pt-6">
+              {activeTab === 'important-dates' && (
+                <section id="important-dates">
                 <h3 className="text-lg font-bold text-secondary">Important Dates</h3>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                   {[
@@ -538,11 +619,11 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
                     </div>
                   ))}
                 </div>
-              </section>
-            )}
+                </section>
+              )}
 
-            {activeTab === 'eligibility' && (
-              <section id="eligibility" className="pt-6">
+              {activeTab === 'eligibility' && (
+                <section id="eligibility">
                 <h3 className="text-lg font-bold text-secondary">Eligibility</h3>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   <div className="rounded-lg border border-border-custom bg-white p-4">
@@ -561,11 +642,11 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
                     <p className="mt-3 text-sm font-semibold text-gray-700">{job.exam?.eligibility?.ageLimit || job.ageLimit || 'Refer to official notification'}</p>
                   </div>
                 </div>
-              </section>
-            )}
+                </section>
+              )}
 
-            {activeTab === 'application-fee' && (
-              <section id="application-fee" className="pt-6">
+              {activeTab === 'application-fee' && (
+                <section id="application-fee">
                 <h3 className="text-lg font-bold text-secondary">Application Fee</h3>
                 <div className="mt-4 rounded-lg border border-border-custom bg-white p-4">
                   <div className="flex items-center gap-2 text-primary">
@@ -576,20 +657,20 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
                     {job.exam?.applicationFee || job.applicationFee || job.fee || 'Please refer to the official notification for category-wise fee details.'}
                   </p>
                 </div>
-              </section>
-            )}
+                </section>
+              )}
 
-            {activeTab === 'selection-process' && (
-              <section id="selection-process" className="pt-6">
+              {activeTab === 'selection-process' && (
+                <section id="selection-process">
                 <h3 className="text-lg font-bold text-secondary">Selection Process</h3>
                 <div className="mt-4 rounded-lg border border-border-custom bg-white p-4 text-sm font-semibold text-gray-700">
                   {job.selectionProcess || 'Written examination, document verification, and other stages as mentioned in the official notice.'}
                 </div>
-              </section>
-            )}
+                </section>
+              )}
 
-            {activeTab === 'syllabus' && (
-              <section id="syllabus" className="pt-6">
+              {activeTab === 'syllabus' && (
+                <section id="syllabus">
                 <h3 className="text-lg font-bold text-secondary">Syllabus</h3>
                 {job.syllabus && Array.isArray(job.syllabus) && job.syllabus.length > 0 ? (
                   <div className="mt-4 space-y-4">
@@ -610,11 +691,11 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
                     Check the official notification for subject-wise syllabus, exam pattern, and marking scheme.
                   </div>
                 )}
-              </section>
-            )}
+                </section>
+              )}
 
-            {activeTab === 'vacancy-details' && (
-              <section id="vacancy-details" className="pt-6">
+              {activeTab === 'vacancy-details' && (
+                <section id="vacancy-details">
                 <h3 className="text-lg font-bold text-secondary">Vacancy Details</h3>
                 {job.exam?.vacancyDetails && job.exam.vacancyDetails.length > 0 ? (
                   <div className="mt-4 space-y-4">
@@ -633,11 +714,11 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
                     No vacancy details available. Please check the official notification.
                   </div>
                 )}
-              </section>
-            )}
+                </section>
+              )}
 
-            {activeTab === 'cutoff' && (
-              <section id="cutoff" className="pt-6">
+              {activeTab === 'cutoff' && (
+                <section id="cutoff">
                 <h3 className="text-lg font-bold text-secondary">Cutoff Marks</h3>
                 {job.cutoff && job.cutoff.length > 0 ? (
                   <div className="mt-4 space-y-4">
@@ -656,8 +737,9 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
                     No cutoff details available. Please check the official notification.
                   </div>
                 )}
-              </section>
-            )}
+                </section>
+              )}
+            </div>
 
             {job.tags && job.tags.length > 0 && (
               <div className="mt-8 border-t border-border-custom pt-6">
