@@ -366,14 +366,14 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
           <div className="overflow-hidden rounded-lg border border-border-custom bg-white shadow-sm">
             <div className="border-b border-border-custom px-5 py-5 md:px-6">
               <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-                <div className="flex gap-4">
-                  <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-lg border border-border-custom bg-primary/5">
+                <div className="flex flex-col gap-4 sm:flex-row">
+                  <div className="flex h-20 w-20 shrink-0 items-center justify-center self-start rounded-lg border border-border-custom bg-primary/5 sm:h-24 sm:w-24">
                     <Image
                       src="/asset/branding.png"
                       alt={job.organization}
                       width={72}
                       height={72}
-                      className="h-[72px] w-[72px] object-contain"
+                      className="h-[60px] w-[60px] object-contain sm:h-[72px] sm:w-[72px]"
                     />
                   </div>
                   <div className="space-y-2">
@@ -399,7 +399,7 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
                 <button
                   type="button"
                   onClick={() => shareJob(job.title, job.slug, categorySlug)}
-                  className="inline-flex items-center justify-center gap-2 self-start rounded-md border border-border-custom bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 hover:text-primary"
+                  className="inline-flex w-full items-center justify-center gap-2 self-start rounded-md border border-border-custom bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 hover:text-primary sm:w-auto"
                 >
                   <Share2 className="h-4 w-4" />
                   Share
@@ -426,13 +426,13 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
             </div>
           </div>
 
-          <div className="rounded-lg border border-border-custom bg-white px-5 py-4 shadow-sm md:px-6">
+          <div className="rounded-lg border border-border-custom bg-white px-4 py-4 shadow-sm md:px-6">
             <nav
-              className="overflow-x-auto border-b border-border-custom"
+              className="overflow-x-auto border-b border-border-custom touch-pan-x"
               onTouchStart={handleSwipeStart}
               onTouchEnd={handleSwipeEnd}
             >
-              <div className="flex min-w-max gap-6 text-xs sm:text-sm font-bold text-gray-600">
+              <div className="flex min-w-max gap-4 text-xs font-bold text-gray-600 sm:gap-6 sm:text-sm">
                 {tabItems.map((tab) => (
                   <button
                     key={tab.id}
@@ -444,7 +444,7 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
                     className={
                       activeTab === tab.id
                         ? 'border-b-2 border-primary pb-3 text-primary'
-                        : 'pb-3 transition hover:text-primary'
+                        : 'pb-3 text-gray-600 transition hover:text-primary'
                     }
                   >
                     {tab.label}
@@ -470,11 +470,11 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
                     return (
                       <div
                         key={detail.label}
-                        className={`grid grid-cols-[140px_minmax(0,1fr)] gap-3 py-2 text-sm ${
+                        className={`grid grid-cols-1 gap-2 py-2 text-sm sm:grid-cols-[140px_minmax(0,1fr)] sm:gap-3 ${
                           isLeftColumnEnd ? 'md:border-b-0' : 'border-b border-gray-100'
                         } ${index >= 6 ? 'md:border-b md:border-l md:border-gray-100 md:pl-8' : ''}`}
                       >
-                        <span className="font-semibold text-gray-600">{detail.label}</span>
+                        <span className="font-semibold text-gray-600 sm:pt-0.5">{detail.label}</span>
                         {isWebsite ? (
                           <a
                             href={detail.value}
@@ -492,7 +492,7 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
                   })}
                 </div>
 
-                <div className="mt-7 grid gap-4 md:grid-cols-2">
+                <div className="mt-7 grid gap-4 sm:grid-cols-2">
                   {job.importantLinks?.applyOnline && (
                     <a
                       href={job.importantLinks.applyOnline}
@@ -523,7 +523,7 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
             {activeTab === 'important-dates' && (
               <section id="important-dates" className="pt-6">
                 <h3 className="text-lg font-bold text-secondary">Important Dates</h3>
-                <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                   {[
                     { label: 'Apply Start Date', value: job.exam?.importantDates?.applyStart || job.importantDates?.applyStart || job.applicationStartDate },
                     { label: 'Last Date to Apply', value: job.exam?.importantDates?.applyLastDate || job.importantDates?.applyLastDate || job.applicationLastDate },
@@ -544,7 +544,7 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
             {activeTab === 'eligibility' && (
               <section id="eligibility" className="pt-6">
                 <h3 className="text-lg font-bold text-secondary">Eligibility</h3>
-                <div className="mt-4 grid gap-4 md:grid-cols-2">
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   <div className="rounded-lg border border-border-custom bg-white p-4">
                     <div className="flex items-center gap-2 text-primary">
                       <GraduationCap className="h-5 w-5" />
