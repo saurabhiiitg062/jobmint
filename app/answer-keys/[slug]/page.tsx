@@ -6,6 +6,21 @@ import { mockJobs } from '@/lib/mockData';
 import { Job } from '@/types';
 
 export const revalidate = 300;
+export const dynamicParams = true;
+
+export async function generateStaticParams() {
+  try {
+    const data = await api.getJobs({ category: 'Answer Key', limit: 100 });
+    return data.jobs.map((job: Job) => ({
+      slug: job.slug,
+    }));
+  } catch (error) {
+    console.warn('API error in generateStaticParams for answer keys:', error);
+    return mockJobs.filter(j => j.category === 'Answer Key').map((job) => ({
+      slug: job.slug,
+    }));
+  }
+}
 
 interface PageProps {
   params: Promise<{ slug: string }>;

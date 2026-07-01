@@ -4,6 +4,43 @@ export interface DynamicTable {
   rows: any[][];
 }
 
+export interface Cutoff {
+  _id: string;
+  jobId: string;
+  year: string;
+  examType: 'Prelims' | 'Mains' | 'Interview' | 'Final' | 'Other';
+  category: string;
+  cutoff: number;
+  qualifyingMarks: number;
+  remarks?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Exam {
+  _id: string;
+  title: string;
+  slug: string;
+  organization: string;
+  overview?: string;
+  importantDates?: {
+    applyStart?: string;
+    applyLastDate?: string;
+    feePaymentLastDate?: string;
+    examDate?: string;
+    admitCardRelease?: string;
+    resultDeclaration?: string;
+  };
+  eligibility?: {
+    qualification?: string;
+    ageLimit?: string;
+  };
+  applicationFee?: string;
+  vacancyDetails?: DynamicTable[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface Job {
   _id: string;
   title: string;
@@ -52,6 +89,9 @@ export interface Job {
   createdAt: string;
   updatedAt: string;
   tables?: DynamicTable[];
+  exam?: Exam;
+  cutoff?: DynamicTable[];
+  syllabus?: DynamicTable[] | string;
 }
 
 export interface Blog {

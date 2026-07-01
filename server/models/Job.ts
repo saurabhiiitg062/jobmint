@@ -45,7 +45,19 @@ const JobSchema = new Schema({
     title: { type: String, required: true },
     columns: [{ type: String, required: true }],
     rows: [[Schema.Types.Mixed]]
-  }]
+  }],
+  exam: { type: Schema.Types.ObjectId, ref: 'Exam', index: true },
+  cutoff: [{
+    title: { type: String, required: true },
+    columns: [{ type: String, required: true }],
+    rows: [[Schema.Types.Mixed]]
+  }],
+  syllabus: [{
+    title: { type: String, required: true },
+    columns: [{ type: String, required: true }],
+    rows: [[Schema.Types.Mixed]],
+  }],
+  rawData: { type: Schema.Types.Mixed, required: true },
 }, {
   timestamps: true
 });

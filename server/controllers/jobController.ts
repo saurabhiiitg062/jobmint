@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { Job } from '../models/Job.js';
 import { Category } from '../models/Category.js';
 import { State } from '../models/State.js';
+import { Exam } from '../models/Exam.js';
 
 // Helper to generate slug
 const generateSlug = (text: string) => {
@@ -38,6 +39,31 @@ const validateTables = (tables: any[]) => {
   return true;
 };
 
+// Helper to trigger ISR revalidation
+const triggerRevalidation = async (slug: string, type: string = 'job') => {
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+    const revalidateUrl = `${apiUrl}/api/revalidate`;
+    const revalidateToken = process.env.REVALIDATE_TOKEN || '';
+    
+    const headers: any = { 'Content-Type': 'application/json' };
+    if (revalidateToken) {
+      headers['Authorization'] = `Bearer ${revalidateToken}`;
+    }
+    
+    await fetch(revalidateUrl, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ slug, type })
+    }).catch(err => {
+      // Silently fail - don't block job creation if revalidation fails
+      console.warn('ISR revalidation failed:', err.message);
+    });
+  } catch (error) {
+    console.warn('Could not trigger revalidation:', error);
+  }
+};
+
 // Create Job
 export const createJob = async (req: Request, res: Response) => {
   try {
@@ -51,6 +77,26 @@ export const createJob = async (req: Request, res: Response) => {
     // Filter out empty tables
     if (jobData.tables) {
       jobData.tables = jobData.tables.filter((table: any) => 
+        table.title && table.columns && table.columns.length > 0 && table.rows && table.rows.length > 0
+      );
+    }
+
+    // Validate and filter cutoff tables if provided
+    if (jobData.cutoff && !validateTables(jobData.cutoff)) {
+      return res.status(400).json({ message: 'Invalid cutoff tables structure. Each table must have a title, at least one column, and at least one row with matching column count.' });
+    }
+    if (jobData.cutoff) {
+      jobData.cutoff = jobData.cutoff.filter((table: any) => 
+        table.title && table.columns && table.columns.length > 0 && table.rows && table.rows.length > 0
+      );
+    }
+
+    // Validate and filter syllabus tables if provided
+    if (jobData.syllabus && !validateTables(jobData.syllabus)) {
+      return res.status(400).json({ message: 'Invalid syllabus tables structure. Each table must have a title, at least one column, and at least one row with matching column count.' });
+    }
+    if (jobData.syllabus) {
+      jobData.syllabus = jobData.syllabus.filter((table: any) => 
         table.title && table.columns && table.columns.length > 0 && table.rows && table.rows.length > 0
       );
     }
@@ -78,6 +124,9 @@ export const createJob = async (req: Request, res: Response) => {
       );
     }
 
+    // Trigger ISR revalidation for the new job (non-blocking)
+    triggerRevalidation(job.slug, 'job');
+
     res.status(201).json(job);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
@@ -101,6 +150,26 @@ export const updateJob = async (req: Request, res: Response) => {
         table.title && table.columns && table.columns.length > 0 && table.rows && table.rows.length > 0
       );
     }
+
+    // Validate and filter cutoff tables if provided
+    if (jobData.cutoff && !validateTables(jobData.cutoff)) {
+      return res.status(400).json({ message: 'Invalid cutoff tables structure. Each table must have a title, at least one column, and at least one row with matching column count.' });
+    }
+    if (jobData.cutoff) {
+      jobData.cutoff = jobData.cutoff.filter((table: any) => 
+        table.title && table.columns && table.columns.length > 0 && table.rows && table.rows.length > 0
+      );
+    }
+
+    // Validate and filter syllabus tables if provided
+    if (jobData.syllabus && !validateTables(jobData.syllabus)) {
+      return res.status(400).json({ message: 'Invalid syllabus tables structure. Each table must have a title, at least one column, and at least one row with matching column count.' });
+    }
+    if (jobData.syllabus) {
+      jobData.syllabus = jobData.syllabus.filter((table: any) => 
+        table.title && table.columns && table.columns.length > 0 && table.rows && table.rows.length > 0
+      );
+    }
     
     if (jobData.title && !jobData.slug) {
       jobData.slug = generateSlug(jobData.title);
@@ -108,6 +177,10 @@ export const updateJob = async (req: Request, res: Response) => {
 
     const job = await Job.findByIdAndUpdate(id, jobData, { new: true });
     if (!job) return res.status(404).json({ message: 'Job not found' });
+    
+    // Trigger ISR revalidation for the updated job (non-blocking)
+    triggerRevalidation(job.slug, 'job');
+    
     res.json(job);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
@@ -134,7 +207,7 @@ export const getJobBySlug = async (req: Request, res: Response) => {
       { slug },
       { $inc: { views: 1 } },
       { new: true }
-    );
+    ).populate('exam');
     if (!job) return res.status(404).json({ message: 'Job not found' });
     res.json(job);
   } catch (error: any) {

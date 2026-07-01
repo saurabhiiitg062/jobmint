@@ -5,6 +5,23 @@ import { mockJobs } from '@/lib/mockData';
 import { Job } from '@/types';
 
 export const revalidate = 300;
+export const dynamicParams = true;
+
+export async function generateStaticParams() {
+  try {
+    const stats = await api.getQuickStats();
+    const orgs: string[] = stats.organizations || [];
+    return orgs.map((org: string) => ({
+      slug: org.toLowerCase(),
+    }));
+  } catch (error) {
+    console.warn('API error in generateStaticParams for organization:', error);
+    const orgs = Array.from(new Set(mockJobs.map(j => j.organization.toLowerCase())));
+    return orgs.map((org) => ({
+      slug: org,
+    }));
+  }
+}
 
 interface PageProps {
   params: Promise<{ slug: string }>;

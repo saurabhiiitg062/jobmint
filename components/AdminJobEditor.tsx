@@ -40,15 +40,6 @@ export default function AdminJobEditor({
     }
   };
 
-  const handleSubmit = () => {
-    const payload = {
-      description: editor?.getHTML() ?? '',
-      tables,
-    };
-    console.log('Job payload:', payload);
-    alert('Job submitted – check console for HTML content.');
-  };
-
   return (
     <div className="space-y-6">
       <div className="p-4 bg-white border border-border-custom rounded-lg shadow-sm">
@@ -59,13 +50,6 @@ export default function AdminJobEditor({
       </div>
 
       <DynamicTableBuilder tables={tables} onChange={handleTablesChange} />
-
-      <button
-        onClick={handleSubmit}
-        className="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90"
-      >
-        Submit Job
-      </button>
     </div>
   );
 }

@@ -70,6 +70,62 @@ export const mockJobs: Job[] = [
           ['Total', '100', '200', '60 mins']
         ]
       }
+    ],
+    exam: {
+      _id: 'exam1',
+      title: 'SSC MTS & Havaldar Exam 2026',
+      slug: 'ssc-mts-havaldar-exam-2026',
+      organization: 'SSC',
+      overview: 'Staff Selection Commission (SSC) has released the official notification for Multi Tasking (Non-Technical) Staff, and Havaldar (CBIC & CBN) Examination 2026. Eligible and interested candidates can apply online using the links below.',
+      importantDates: {
+        applyStart: '2026-06-01',
+        applyLastDate: '2026-07-15',
+        feePaymentLastDate: '2026-07-16',
+        examDate: 'October 2026',
+        admitCardRelease: 'September 2026',
+        resultDeclaration: 'December 2026'
+      },
+      eligibility: {
+        qualification: '10th Pass (Matriculation) from any recognized board in India.',
+        ageLimit: '18-25 years for MTS and 18-27 years for Havaldar posts.'
+      },
+      applicationFee: '₹100 for General/OBC candidates. Women, SC, ST, and PwD candidates are exempted from paying the application fee.',
+      vacancyDetails: [
+        {
+          title: 'Vacancy Details',
+          columns: ['Post', 'Department', 'UR', 'OBC', 'EWS', 'SC', 'ST', 'Total'],
+          rows: [
+            ['MTS', 'Various Ministries', 2800, 1900, 700, 1100, 700, 7200],
+            ['Havildar', 'CBIC', 400, 300, 100, 200, 160, 1160]
+          ]
+        }
+      ]
+    },
+    cutoff: [
+      {
+        title: 'Cutoff Marks (Previous Year)',
+        columns: ['Category', 'Cutoff', 'Qualifying Marks'],
+        rows: [
+          ['General', '110.50', '100'],
+          ['OBC', '103.25', '90'],
+          ['EWS', '98.75', '90'],
+          ['SC', '91.50', '80'],
+          ['ST', '87.25', '80']
+        ]
+      }
+    ],
+    syllabus: [
+      {
+        title: 'Exam Pattern',
+        columns: ['Subject', 'Questions', 'Marks', 'Duration'],
+        rows: [
+          ['General Intelligence & Reasoning', '25', '50', '60 mins'],
+          ['Numerical Aptitude', '25', '50', '60 mins'],
+          ['General English', '25', '50', '60 mins'],
+          ['General Awareness', '25', '50', '60 mins'],
+          ['Total', '100', '200', '60 mins']
+        ]
+      }
     ]
   },
   {

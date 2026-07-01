@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -102,6 +102,8 @@ function shareJob(title: string, slug: string, categorySlug: JobDetailViewProps[
 
 export default function JobDetailView({ job, categorySlug }: JobDetailViewProps) {
   const [activeTab, setActiveTab] = useState('overview');
+  const tabButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const swipeStartRef = useRef<{ x: number; y: number } | null>(null);
 
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
@@ -121,7 +123,7 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
           title: job.title,
           description: job.seoDescription || job.title,
           datePosted: job.publishedAt || job.createdAt,
-          validThrough: job.applicationLastDate || job.importantDates?.applyLastDate || undefined,
+          validThrough: job.exam?.importantDates?.applyLastDate || job.importantDates?.applyLastDate || job.applicationLastDate || undefined,
           hiringOrganization: {
             '@type': 'Organization',
             name: job.organization,
@@ -147,7 +149,7 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
                 },
               }
             : undefined,
-          educationRequirements: job.qualification,
+          educationRequirements: job.exam?.eligibility?.qualification || job.qualification,
           employmentType: 'FULL_TIME',
         }
       : null;
@@ -161,8 +163,8 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
         name: `What is the last date to apply for ${job.title}?`,
         acceptedAnswer: {
           '@type': 'Answer',
-          text: job.importantDates?.applyLastDate
-            ? `The last date to apply is ${job.importantDates.applyLastDate}.`
+          text: (job.exam?.importantDates?.applyLastDate || job.importantDates?.applyLastDate)
+            ? `The last date to apply is ${job.exam?.importantDates?.applyLastDate || job.importantDates?.applyLastDate}.`
             : 'Please check the official notification for the closing date.',
         },
       },
@@ -171,7 +173,7 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
         name: `What is the qualification required for ${job.title}?`,
         acceptedAnswer: {
           '@type': 'Answer',
-          text: `The qualification required is ${job.qualification}.`,
+          text: `The qualification required is ${job.exam?.eligibility?.qualification || job.qualification}.`,
         },
       },
       {
@@ -193,17 +195,17 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
     },
     {
       label: 'Apply Start',
-      value: formatDate(job.importantDates?.applyStart || job.applicationStartDate) || 'Check notice',
+      value: formatDate(job.exam?.importantDates?.applyStart || job.importantDates?.applyStart || job.applicationStartDate) || 'Check notice',
       icon: CalendarDays,
     },
     {
       label: 'Last Date',
-      value: formatDate(job.importantDates?.applyLastDate || job.applicationLastDate) || 'Check notice',
+      value: formatDate(job.exam?.importantDates?.applyLastDate || job.importantDates?.applyLastDate || job.applicationLastDate) || 'Check notice',
       icon: CalendarDays,
     },
     {
       label: 'Exam Date',
-      value: formatDate(job.importantDates?.examDate || job.examDate) || 'As scheduled',
+      value: formatDate(job.exam?.importantDates?.examDate || job.importantDates?.examDate || job.examDate) || 'As scheduled',
       icon: ScrollText,
     },
     {
@@ -221,11 +223,11 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
     { label: 'Apply Mode', value: 'Online' },
     { label: 'Official Website', value: job.importantLinks?.officialWebsite || 'Check below' },
     { label: 'Notification No.', value: job.slug.toUpperCase().replace(/-/g, ' ') },
-    { label: 'Apply Start Date', value: formatDate(job.importantDates?.applyStart || job.applicationStartDate) || 'Check notice' },
-    { label: 'Last Date to Apply', value: formatDate(job.importantDates?.applyLastDate || job.applicationLastDate) || 'Check notice' },
-    { label: 'Exam Date', value: formatDate(job.importantDates?.examDate || job.examDate) || 'As scheduled' },
+    { label: 'Apply Start Date', value: formatDate(job.exam?.importantDates?.applyStart || job.importantDates?.applyStart || job.applicationStartDate) || 'Check notice' },
+    { label: 'Last Date to Apply', value: formatDate(job.exam?.importantDates?.applyLastDate || job.importantDates?.applyLastDate || job.applicationLastDate) || 'Check notice' },
+    { label: 'Exam Date', value: formatDate(job.exam?.importantDates?.examDate || job.importantDates?.examDate || job.examDate) || 'As scheduled' },
     { label: 'Category', value: getCategorySummary(job.category) },
-    { label: 'Qualification', value: job.qualification },
+    { label: 'Qualification', value: job.exam?.eligibility?.qualification || job.qualification },
   ];
 
   const summaryDetails: DetailItem[] = [
@@ -311,6 +313,48 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
     { id: 'cutoff', label: 'Cutoff' },
   ];
 
+  const tabOrder = tabItems.map((tab) => tab.id);
+
+  const moveTab = (direction: -1 | 1) => {
+    const currentIndex = tabOrder.indexOf(activeTab);
+    if (currentIndex === -1) return;
+
+    const nextIndex = currentIndex + direction;
+    if (nextIndex < 0 || nextIndex >= tabOrder.length) return;
+
+    setActiveTab(tabOrder[nextIndex]);
+  };
+
+  const handleSwipeStart = (event: React.TouchEvent<HTMLElement>) => {
+    const touch = event.touches[0];
+    swipeStartRef.current = { x: touch.clientX, y: touch.clientY };
+  };
+
+  const handleSwipeEnd = (event: React.TouchEvent<HTMLElement>) => {
+    const start = swipeStartRef.current;
+    if (!start) return;
+
+    const touch = event.changedTouches[0];
+    const deltaX = touch.clientX - start.x;
+    const deltaY = touch.clientY - start.y;
+
+    swipeStartRef.current = null;
+
+    if (Math.abs(deltaX) < 45 || Math.abs(deltaX) < Math.abs(deltaY)) {
+      return;
+    }
+
+    moveTab(deltaX < 0 ? 1 : -1);
+  };
+
+  useEffect(() => {
+    tabButtonRefs.current[activeTab]?.scrollIntoView({
+      behavior: 'smooth',
+      inline: 'center',
+      block: 'nearest',
+    });
+  }, [activeTab]);
+
   return (
     <article className="space-y-5">
       <StructuredData data={breadcrumbSchema} />
@@ -383,13 +427,20 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
           </div>
 
           <div className="rounded-lg border border-border-custom bg-white px-5 py-4 shadow-sm md:px-6">
-            <nav className="overflow-x-auto border-b border-border-custom">
+            <nav
+              className="overflow-x-auto border-b border-border-custom"
+              onTouchStart={handleSwipeStart}
+              onTouchEnd={handleSwipeEnd}
+            >
               <div className="flex min-w-max gap-6 text-xs sm:text-sm font-bold text-gray-600">
                 {tabItems.map((tab) => (
                   <button
                     key={tab.id}
                     type="button"
                     onClick={() => setActiveTab(tab.id)}
+                    ref={(node) => {
+                      tabButtonRefs.current[tab.id] = node;
+                    }}
                     className={
                       activeTab === tab.id
                         ? 'border-b-2 border-primary pb-3 text-primary'
@@ -408,7 +459,7 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
                   {getOverviewTitle(job.title)}
                 </h2>
                 <p className="mt-3 max-w-[78ch] text-sm leading-7 text-gray-600">
-                  {buildOverview(job)}
+                  {job.exam?.overview || buildOverview(job)}
                 </p>
 
                 <div className="mt-6 grid gap-x-10 gap-y-0 md:grid-cols-2">
@@ -473,10 +524,17 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
               <section id="important-dates" className="pt-6">
                 <h3 className="text-lg font-bold text-secondary">Important Dates</h3>
                 <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                  {topStats.slice(1, 4).map((item) => (
+                  {[
+                    { label: 'Apply Start Date', value: job.exam?.importantDates?.applyStart || job.importantDates?.applyStart || job.applicationStartDate },
+                    { label: 'Last Date to Apply', value: job.exam?.importantDates?.applyLastDate || job.importantDates?.applyLastDate || job.applicationLastDate },
+                    { label: 'Fee Payment Last Date', value: job.exam?.importantDates?.feePaymentLastDate || job.importantDates?.feePaymentLastDate },
+                    { label: 'Exam Date', value: job.exam?.importantDates?.examDate || job.importantDates?.examDate || job.examDate },
+                    { label: 'Admit Card Release', value: job.exam?.importantDates?.admitCardRelease || job.importantDates?.admitCardRelease },
+                    { label: 'Result Declaration', value: job.exam?.importantDates?.resultDeclaration || job.importantDates?.resultDeclaration }
+                  ].filter(item => Boolean(item.value)).map((item) => (
                     <div key={item.label} className="rounded-lg border border-border-custom bg-white p-4">
                       <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">{item.label}</p>
-                      <p className="mt-2 text-base font-bold text-secondary">{item.value}</p>
+                      <p className="mt-2 text-base font-bold text-secondary">{formatDate(item.value) || 'Check notice'}</p>
                     </div>
                   ))}
                 </div>
@@ -492,7 +550,7 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
                       <GraduationCap className="h-5 w-5" />
                       <p className="font-bold">Qualification</p>
                     </div>
-                    <p className="mt-3 text-sm font-semibold text-gray-700">{job.qualification}</p>
+                    <p className="mt-3 text-sm font-semibold text-gray-700">{job.exam?.eligibility?.qualification || job.qualification}</p>
                   </div>
 
                   <div className="rounded-lg border border-border-custom bg-white p-4">
@@ -500,7 +558,7 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
                       <Users className="h-5 w-5" />
                       <p className="font-bold">Age Limit</p>
                     </div>
-                    <p className="mt-3 text-sm font-semibold text-gray-700">{job.ageLimit || 'Refer to official notification'}</p>
+                    <p className="mt-3 text-sm font-semibold text-gray-700">{job.exam?.eligibility?.ageLimit || job.ageLimit || 'Refer to official notification'}</p>
                   </div>
                 </div>
               </section>
@@ -515,7 +573,7 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
                     <p className="font-bold">Fee Details</p>
                   </div>
                   <p className="mt-3 text-sm font-semibold text-gray-700">
-                    {job.applicationFee || job.fee || 'Please refer to the official notification for category-wise fee details.'}
+                    {job.exam?.applicationFee || job.applicationFee || job.fee || 'Please refer to the official notification for category-wise fee details.'}
                   </p>
                 </div>
               </section>
@@ -533,16 +591,38 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
             {activeTab === 'syllabus' && (
               <section id="syllabus" className="pt-6">
                 <h3 className="text-lg font-bold text-secondary">Syllabus</h3>
-                <div className="mt-4 rounded-lg border border-border-custom bg-white p-4 text-sm font-semibold text-gray-700">
-                  Check the official notification for subject-wise syllabus, exam pattern, and marking scheme.
-                </div>
+                {job.syllabus && Array.isArray(job.syllabus) && job.syllabus.length > 0 ? (
+                  <div className="mt-4 space-y-4">
+                    {job.syllabus.map((table, index) => (
+                      <DynamicTable key={index} table={table} />
+                    ))}
+                  </div>
+                ) : job.syllabus && typeof job.syllabus === 'string' ? (
+                  <div className="mt-4 rounded-lg border border-border-custom bg-white p-4 text-sm leading-relaxed text-gray-700" dangerouslySetInnerHTML={{ __html: job.syllabus }} />
+                ) : job.tables && job.tables.length > 0 ? (
+                  <div className="mt-4 space-y-4">
+                    {job.tables.filter(table => table.title.toLowerCase().includes('syllabus') || table.title.toLowerCase().includes('pattern')).map((table, index) => (
+                      <DynamicTable key={index} table={table} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="mt-4 rounded-lg border border-border-custom bg-white p-4 text-sm font-semibold text-gray-700">
+                    Check the official notification for subject-wise syllabus, exam pattern, and marking scheme.
+                  </div>
+                )}
               </section>
             )}
 
             {activeTab === 'vacancy-details' && (
               <section id="vacancy-details" className="pt-6">
                 <h3 className="text-lg font-bold text-secondary">Vacancy Details</h3>
-                {job.tables && job.tables.length > 0 ? (
+                {job.exam?.vacancyDetails && job.exam.vacancyDetails.length > 0 ? (
+                  <div className="mt-4 space-y-4">
+                    {job.exam.vacancyDetails.map((table, index) => (
+                      <DynamicTable key={index} table={table} />
+                    ))}
+                  </div>
+                ) : job.tables && job.tables.length > 0 ? (
                   <div className="mt-4 space-y-4">
                     {job.tables.filter(table => table.title.toLowerCase().includes('vacancy')).map((table, index) => (
                       <DynamicTable key={index} table={table} />
@@ -559,7 +639,13 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
             {activeTab === 'cutoff' && (
               <section id="cutoff" className="pt-6">
                 <h3 className="text-lg font-bold text-secondary">Cutoff Marks</h3>
-                {job.tables && job.tables.length > 0 ? (
+                {job.cutoff && job.cutoff.length > 0 ? (
+                  <div className="mt-4 space-y-4">
+                    {job.cutoff.map((table, index) => (
+                      <DynamicTable key={index} table={table} />
+                    ))}
+                  </div>
+                ) : job.tables && job.tables.length > 0 ? (
                   <div className="mt-4 space-y-4">
                     {job.tables.filter(table => table.title.toLowerCase().includes('cutoff')).map((table, index) => (
                       <DynamicTable key={index} table={table} />

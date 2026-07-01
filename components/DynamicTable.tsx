@@ -1,6 +1,8 @@
 import React from 'react';
 import { DynamicTable as DynamicTableType } from '@/types';
 
+
+
 interface Props {
   table: DynamicTableType;
 }

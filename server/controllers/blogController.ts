@@ -12,6 +12,31 @@ const generateSlug = (text: string) => {
     .replace(/\-\-+/g, '-'); 
 };
 
+// Helper to trigger ISR revalidation
+const triggerRevalidation = async (slug: string, type: string = 'blog') => {
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+    const revalidateUrl = `${apiUrl}/api/revalidate`;
+    const revalidateToken = process.env.REVALIDATE_TOKEN || '';
+    
+    const headers: any = { 'Content-Type': 'application/json' };
+    if (revalidateToken) {
+      headers['Authorization'] = `Bearer ${revalidateToken}`;
+    }
+    
+    await fetch(revalidateUrl, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ slug, type })
+    }).catch(err => {
+      // Silently fail - don't block blog creation if revalidation fails
+      console.warn('ISR revalidation failed:', err.message);
+    });
+  } catch (error) {
+    console.warn('Could not trigger revalidation:', error);
+  }
+};
+
 // Create Blog
 export const createBlog = async (req: Request, res: Response) => {
   try {
@@ -27,6 +52,10 @@ export const createBlog = async (req: Request, res: Response) => {
 
     const blog = new Blog(blogData);
     await blog.save();
+    
+    // Trigger ISR revalidation for the new blog (non-blocking)
+    triggerRevalidation(blog.slug, 'blog');
+    
     res.status(201).json(blog);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
@@ -44,6 +73,10 @@ export const updateBlog = async (req: Request, res: Response) => {
 
     const blog = await Blog.findByIdAndUpdate(id, blogData, { new: true });
     if (!blog) return res.status(404).json({ message: 'Blog not found' });
+    
+    // Trigger ISR revalidation for the updated blog (non-blocking)
+    triggerRevalidation(blog.slug, 'blog');
+    
     res.json(blog);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
