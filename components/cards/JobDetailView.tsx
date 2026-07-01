@@ -495,12 +495,9 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
 
           <div className="rounded-lg border border-border-custom bg-white px-4 py-4 shadow-sm md:px-6">
             <nav
-              className="overflow-x-auto border-b border-border-custom touch-pan-x"
-              onTouchStart={handleSwipeStart}
-              onTouchMove={handleSwipeMove}
-              onTouchEnd={handleSwipeEnd}
+              className="overflow-x-auto border-b border-border-custom"
             >
-              <div className="flex min-w-max gap-4 text-xs font-bold text-gray-600 sm:gap-6 sm:text-sm">
+              <div className="flex min-w-max gap-4 whitespace-nowrap text-xs font-bold text-gray-600 sm:gap-6 sm:text-sm">
                 {tabItems.map((tab) => (
                   <button
                     key={tab.id}
