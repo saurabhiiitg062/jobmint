@@ -53,15 +53,15 @@ export const api = {
         query.append(key, String(val));
       }
     });
-    return fetcher(`/jobs?${query.toString()}`, { next: { revalidate: 300 } });
+    return fetcher(`/jobs?${query.toString()}`, { next: { revalidate: 300, tags: ['jobs'] } });
   },
 
   getJobBySlug: (slug: string) => {
-    return fetcher(`/jobs/slug/${slug}`, { next: { revalidate: 300 } });
+    return fetcher(`/jobs/slug/${slug}`, { next: { revalidate: 300, tags: ['jobs', `job-${slug}`] } });
   },
 
   getQuickStats: () => {
-    return fetcher('/jobs/stats', { next: { revalidate: 300 } });
+    return fetcher('/jobs/stats', { next: { revalidate: 300, tags: ['jobs'] } });
   },
 
   // Public Blogs
@@ -72,11 +72,11 @@ export const api = {
         query.append(key, String(val));
       }
     });
-    return fetcher(`/blogs?${query.toString()}`, { next: { revalidate: 300 } });
+    return fetcher(`/blogs?${query.toString()}`, { next: { revalidate: 300, tags: ['blogs'] } });
   },
 
   getBlogBySlug: (slug: string) => {
-    return fetcher(`/blogs/slug/${slug}`, { next: { revalidate: 300 } });
+    return fetcher(`/blogs/slug/${slug}`, { next: { revalidate: 300, tags: ['blogs', `blog-${slug}`] } });
   },
 
   // Admin auth
@@ -98,7 +98,6 @@ export const api = {
       body: JSON.stringify(jobData)
     });
   },
-
   updateJob: (id: string, jobData: unknown) => {
     return fetcher(`/jobs/${id}`, {
       method: 'PUT',

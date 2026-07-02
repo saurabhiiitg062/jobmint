@@ -10,6 +10,10 @@ import { api } from '@/lib/api/client';
 import { Job, Blog } from '@/types';
 import StructuredData from '@/components/seo/StructuredData';
 
+import { connectToDatabase } from '@/lib/server/db';
+import { Job as JobModel } from '@/lib/server/models/Job';
+import { Blog as BlogModel } from '@/lib/server/models/Blog';
+
 // Force SSG by default, revalidate every 300 seconds
 export const revalidate = 300;
 
@@ -18,12 +22,21 @@ export default async function HomePage() {
   let dbBlogs: Blog[] = [];
 
   try {
-    const jobsRes = await api.getJobs({ limit: 100 });
-    dbJobs = jobsRes?.jobs || [];
-    const blogsRes = await api.getBlogs({ limit: 6 });
-    dbBlogs = blogsRes?.blogs || [];
+    await connectToDatabase();
+    
+    const fetchedJobs = await JobModel.find({ status: 'published' })
+      .sort({ publishedAt: -1 })
+      .limit(100)
+      .lean();
+    dbJobs = JSON.parse(JSON.stringify(fetchedJobs));
+    
+    const fetchedBlogs = await BlogModel.find()
+      .sort({ publishedAt: -1 })
+      .limit(6)
+      .lean();
+    dbBlogs = JSON.parse(JSON.stringify(fetchedBlogs));
   } catch (error) {
-    console.warn('API connection failed. Falling back to local mock data.');
+    console.warn('Database connection failed. Falling back to local mock data.', error);
   }
 
   // Use real data from the database
