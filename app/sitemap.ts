@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
-import { api } from '@/lib/api/client';
-
-
+import { connectToDatabase } from '@/lib/server/db';
+import { Job as JobModel } from '@/lib/server/models/Job';
+import { Blog as BlogModel } from '@/lib/server/models/Blog';
 import { Job, Blog } from '@/types';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -10,13 +10,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let blogsList: Blog[] = [];
 
   try {
-    const jobsRes = await api.getJobs({ limit: 100 });
-    jobsList = jobsRes?.jobs || [];
-    const blogsRes = await api.getBlogs({ limit: 50 });
-    blogsList = blogsRes?.blogs || [];
+    await connectToDatabase();
+    const fetchedJobs = await JobModel.find({})
+      .sort({ publishedAt: -1 })
+      .limit(1000)
+      .lean();
+    jobsList = JSON.parse(JSON.stringify(fetchedJobs));
+
+    const fetchedBlogs = await BlogModel.find({})
+      .sort({ publishedAt: -1 })
+      .limit(500)
+      .lean();
+    blogsList = JSON.parse(JSON.stringify(fetchedBlogs));
   } catch (e) {
-    
-    
+    console.error('Error fetching data for sitemap:', e);
   }
 
   // Core Pages
