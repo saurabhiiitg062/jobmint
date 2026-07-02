@@ -305,7 +305,7 @@ function AdminDashboardContent() {
               isEditingBlog={isEditingBlog} 
               onSaveBlog={onSaveBlog} 
               handleEditBlogSetup={handleEditBlogSetup} 
-              handleDeleteJob={handleDeleteBlog} 
+              handleDeleteBlog={handleDeleteBlog} 
               resetEditState={resetBlogEditState} 
             />
           )}
