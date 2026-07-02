@@ -20,6 +20,7 @@ export default function JobsTab({
       {/* Job Form */}
       <div className="lg:col-span-2">
         <JobPostForm
+          key={isEditing || 'new'}
           initialData={isEditing ? jobs.find(j => j._id === isEditing) : undefined}
           onSubmit={onSaveJob}
           isEditing={!!isEditing}

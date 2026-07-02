@@ -51,9 +51,21 @@ export default function JobPostForm({ initialData, onSubmit, isEditing = false, 
     });
   }, []);
 
+  const flattenedInitialData = React.useMemo(() => {
+    if (!initialData) return {};
+    return {
+      ...initialData,
+      applyStart: initialData?.importantDates?.applyStart || '',
+      applyLastDate: initialData?.importantDates?.applyLastDate || '',
+      applyOnline: initialData?.importantLinks?.applyOnline || '',
+      downloadNotification: initialData?.importantLinks?.downloadNotification || '',
+      officialWebsite: initialData?.importantLinks?.officialWebsite || ''
+    };
+  }, [initialData]);
+
   const { register, handleSubmit, formState: { errors }, reset } = useForm({
     resolver: zodResolver(jobFormSchema),
-    defaultValues: initialData || {}
+    defaultValues: flattenedInitialData
   });
 
   const handleFormSubmit = async (formData: any) => {

@@ -119,21 +119,12 @@ function AdminDashboardContent() {
   // JOB HANDLERS
   const onSaveJob = async (formData: any) => {
     setErrorMsg(''); setSuccessMsg('');
-    const preparedData = {
-      ...formData,
-      importantDates: { applyStart: 'Available Now', applyLastDate: 'Apply Soon' },
-      importantLinks: {
-        applyOnline: formData.applyOnline || '#',
-        downloadNotification: formData.downloadNotification || '#',
-        officialWebsite: formData.officialWebsite || '#'
-      }
-    };
     try {
       if (isEditingJob) {
-        await api.updateJob(isEditingJob, preparedData);
+        await api.updateJob(isEditingJob, formData);
         setSuccessMsg('Job updated successfully');
       } else {
-        await api.createJob(preparedData);
+        await api.createJob(formData);
         setSuccessMsg('Job created successfully');
       }
       setIsEditingJob(null);
