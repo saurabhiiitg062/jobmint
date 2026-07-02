@@ -38,7 +38,7 @@ interface Props {
 }
 
 export default function JobPostForm({ initialData, onSubmit, isEditing = false, onCancel }: Props) {
-  const [description, setDescription] = useState(initialData?.description || '');
+  const [description, setDescription] = useState(initialData?.rawData?.description || initialData?.description || '');
   const [tables, setTables] = useState<DynamicTableType[]>(initialData?.tables || []);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [examsList, setExamsList] = useState<any[]>([]);
@@ -73,8 +73,10 @@ export default function JobPostForm({ initialData, onSubmit, isEditing = false, 
     try {
       const preparedData = {
         ...formData,
-        description,
         tables,
+        rawData: {
+          description
+        },
         importantDates: {
           applyStart: formData.applyStart || 'Available Now',
           applyLastDate: formData.applyLastDate || 'Apply Soon'
