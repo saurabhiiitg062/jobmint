@@ -27,7 +27,12 @@ export default function AdminJobEditor({
     immediatelyRender: false,
     extensions: [
       StarterKit, 
-      Link.configure({ openOnClick: false }),
+      Link.configure({ 
+        openOnClick: false,
+        HTMLAttributes: {
+          rel: 'noopener noreferrer nofollow',
+        }
+      }),
       Underline
     ],
     content: initialDescription,

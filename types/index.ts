@@ -38,6 +38,7 @@ export interface Exam {
   };
   applicationFee?: string;
   vacancyDetails?: DynamicTable[];
+  historicalCutoffs?: DynamicTable[];
   createdAt?: string;
   updatedAt?: string;
 }

@@ -1,8 +1,9 @@
 import React from 'react';
 import Link from 'next/link';
-import { Search, Briefcase, FileText, CheckCircle2, ChevronRight, Award, MapPin, Building2, HelpCircle, Clock, Flame, CheckCircle } from 'lucide-react';
+import { Search, Briefcase, FileText, CheckCircle2, ChevronRight, Award, MapPin, Building2, HelpCircle, Clock, Flame, CheckCircle, Calendar } from 'lucide-react';
 import ExamCalendar from '@/components/ExamCalendar';
-import StateFilterWidget from '@/components/widgets/StateFilterWidget';
+import PinnedJobsWidget from '@/components/widgets/PinnedJobsWidget';
+import HomeJobList from '@/components/widgets/HomeJobList';
 
 import { api } from '@/lib/api/client';
 import { mockJobs, mockBlogs } from '@/lib/mockData';
@@ -25,9 +26,9 @@ export default async function HomePage() {
     console.warn('API connection failed. Falling back to local mock data.');
   }
 
-  // Use mock data for demonstration
-  const jobsList = mockJobs;
-  const blogsList = mockBlogs;
+  // Use real data from the database
+  const jobsList = dbJobs;
+  const blogsList = dbBlogs;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -101,7 +102,7 @@ export default async function HomePage() {
         <div className="px-6 md:px-10 py-10 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
 
           {/* Left — Headline */}
-          <div className="space-y-5">
+          <div className="space-y-6">
             {/* Welcome pill */}
             <div className="inline-flex items-center space-x-1.5 bg-white border border-gray-200 rounded-full px-3 py-1 text-xs font-medium text-gray-600 shadow-sm">
               <span className="text-primary">⊕</span>
@@ -272,12 +273,12 @@ export default async function HomePage() {
                     <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.96 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
                   </svg>
                 </div>
-                <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">10</span>
+                <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">1</span>
               </a>
             </div>
           </div>
           
-          <StateFilterWidget />
+          <PinnedJobsWidget />
         </aside>
 
         <section className="xl:col-span-3 grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -292,26 +293,11 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="p-3 divide-y divide-gray-100 flex-grow">
-            {/* Eligibility Checker for latest jobs */}
-
-            {latestJobs.length > 0 ? latestJobs.map((job) => {
-              const applyLastDate = job.importantDates?.applyLastDate ? new Date(job.importantDates.applyLastDate) : null;
-              const today = new Date();
-              const daysRemaining = applyLastDate ? Math.max(0, Math.ceil((applyLastDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))) : null;
-              return (
-                <div key={job._id} className="flex items-center justify-between py-2.5 px-2">
-                  <Link href={`/jobs/${job.slug}`} className="text-xs sm:text-sm text-primary hover:text-red-700 font-medium">
-                    {job.title} {job.vacancy ? `(${job.vacancy} Post)` : ''}
-                  </Link>
-                  <div className="flex items-center space-x-2">
-                    <Clock className="w-4 h-4 text-gray-500" aria-label="Days left" />
-                    <span className="text-xs text-gray-600">{daysRemaining !== null ? `${daysRemaining}d` : '-'}</span>
-                  </div>
-                </div>
-              );
-            }) : (
-              <p className="text-gray-400 text-center py-6 text-xs">No active jobs found.</p>
-            )}
+          <HomeJobList
+            jobs={latestJobs}
+            type="latest"
+            listClassName="p-3 divide-y divide-gray-100"
+          />
           </div>
         </div>
 
@@ -327,17 +313,11 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="p-3 divide-y divide-gray-100 flex-grow">
-            {admitCards.length > 0 ? admitCards.map((job) => (
-              <Link 
-                key={job._id} 
-                href={`/admit-cards/${job.slug}`}
-                className="block py-2.5 px-2 hover:bg-gray-50 rounded transition-colors text-xs sm:text-sm text-secondary hover:text-blue-900 font-medium"
-              >
-                {job.title}
-              </Link>
-            )) : (
-              <p className="text-gray-400 text-center py-6 text-xs">No active admit cards found.</p>
-            )}
+            <HomeJobList
+            jobs={admitCards}
+            type="admit-card"
+            listClassName="p-3 divide-y divide-gray-100"
+          />
           </div>
         </div>
 
@@ -352,19 +332,11 @@ export default async function HomePage() {
               View All <ChevronRight className="w-3 h-3" />
             </Link>
           </div>
-          <div className="p-3 divide-y divide-gray-100 flex-grow">
-            {results.length > 0 ? results.map((job) => (
-              <Link 
-                key={job._id} 
-                href={`/results/${job.slug}`}
-                className="block py-2.5 px-2 hover:bg-gray-50 rounded transition-colors text-xs sm:text-sm text-green-800 hover:text-green-950 font-medium"
-              >
-                {job.title}
-              </Link>
-            )) : (
-              <p className="text-gray-400 text-center py-6 text-xs">No results declared recently.</p>
-            )}
-          </div>
+          <HomeJobList
+            jobs={results}
+            type="result"
+            listClassName="p-3 divide-y divide-gray-100"
+          />
         </div>
         </section>
       </div>
@@ -376,13 +348,12 @@ export default async function HomePage() {
           <div className="bg-gray-800 text-white px-4 py-2.5 rounded-t-lg font-bold text-xs uppercase tracking-wider">
             Answer Keys
           </div>
-          <div className="p-3 divide-y divide-gray-100 text-xs sm:text-sm">
-            {answerKeys.map((job) => (
-              <Link key={job._id} href={`/answer-keys/${job.slug}`} className="block py-2 hover:text-primary">
-                • {job.title}
-              </Link>
-            ))}
-          </div>
+          <HomeJobList
+            jobs={answerKeys}
+            type="simple"
+            categorySlug="answer-keys"
+            listClassName="p-3 divide-y divide-gray-100 text-xs sm:text-sm"
+          />
         </div>
 
         {/* Syllabus */}
@@ -390,13 +361,12 @@ export default async function HomePage() {
           <div className="bg-gray-800 text-white px-4 py-2.5 rounded-t-lg font-bold text-xs uppercase tracking-wider">
             Syllabus
           </div>
-          <div className="p-3 divide-y divide-gray-100 text-xs sm:text-sm">
-            {syllabusList.map((job) => (
-              <Link key={job._id} href={`/syllabus/${job.slug}`} className="block py-2 hover:text-primary">
-                • {job.title}
-              </Link>
-            ))}
-          </div>
+          <HomeJobList
+            jobs={syllabusList}
+            type="simple"
+            categorySlug="syllabus"
+            listClassName="p-3 divide-y divide-gray-100 text-xs sm:text-sm"
+          />
         </div>
 
         {/* Schemes */}
@@ -404,13 +374,12 @@ export default async function HomePage() {
           <div className="bg-gray-800 text-white px-4 py-2.5 rounded-t-lg font-bold text-xs uppercase tracking-wider">
             Government Schemes
           </div>
-          <div className="p-3 divide-y divide-gray-100 text-xs sm:text-sm">
-            {governmentSchemes.map((job) => (
-              <Link key={job._id} href={`/government-schemes/${job.slug}`} className="block py-2 hover:text-primary">
-                • {job.title}
-              </Link>
-            ))}
-          </div>
+          <HomeJobList
+            jobs={governmentSchemes}
+            type="simple"
+            categorySlug="government-schemes"
+            listClassName="p-3 divide-y divide-gray-100 text-xs sm:text-sm"
+          />
 
           
         </div>

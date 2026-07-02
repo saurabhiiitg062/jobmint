@@ -806,6 +806,18 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
 
                 <section id="cutoff" className={activeTab === 'cutoff' ? 'block' : 'hidden print:hidden'}>
                   <h3 className="text-lg font-bold text-secondary">Cutoff Marks</h3>
+                  
+                  {job.exam?.historicalCutoffs && job.exam.historicalCutoffs.length > 0 && (
+                    <div className="mt-4 mb-8 space-y-4">
+                      <div className="bg-blue-50 border border-blue-200 text-blue-800 text-sm p-3 rounded-lg mb-4 font-semibold">
+                        Historical Cutoffs for {job.exam.title}
+                      </div>
+                      {job.exam.historicalCutoffs.map((table, index) => (
+                        <DynamicTable key={`hist-${index}`} table={table} />
+                      ))}
+                    </div>
+                  )}
+
                   {job.cutoff && job.cutoff.length > 0 ? (
                     <div className="mt-4 space-y-4">
                       {job.cutoff.map((table, index) => (
@@ -818,11 +830,11 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
                         <DynamicTable key={index} table={table} />
                       ))}
                     </div>
-                  ) : (
+                  ) : (!job.exam?.historicalCutoffs || job.exam.historicalCutoffs.length === 0) ? (
                     <div className="mt-4 rounded-lg border border-border-custom bg-white p-4 text-sm font-semibold text-gray-700">
                       No cutoff details available. Please check the official notification.
                     </div>
-                  )}
+                  ) : null}
                 </section>
               </div>
 
@@ -857,7 +869,7 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
                       key={linkItem.label}
                       href={linkItem.href}
                       target="_blank"
-                      rel="noopener noreferrer"
+                      rel="noopener noreferrer nofollow"
                       className="flex items-center justify-between gap-3 rounded-md px-0 py-1 transition hover:text-primary"
                     >
                       <span className="flex min-w-0 items-center gap-2 text-sm font-semibold text-gray-700">
@@ -894,7 +906,7 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
                 <a
                   href="https://t.me"
                   target="_blank"
-                  rel="noopener noreferrer"
+                  rel="noopener noreferrer nofollow"
                   className="inline-flex items-center gap-2 rounded-md bg-secondary px-4 py-3 text-sm font-bold text-white transition hover:bg-primary"
                 >
                   <Send className="h-4 w-4" />

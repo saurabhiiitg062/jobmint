@@ -20,6 +20,7 @@ const jobFormSchema = z.object({
   selectionProcess: z.string().optional(),
   category: z.string().min(1, 'Category is required'),
   state: z.string().optional(),
+  exam: z.string().optional(),
   applyOnline: z.string().optional(),
   downloadNotification: z.string().optional(),
   officialWebsite: z.string().optional(),
@@ -40,6 +41,15 @@ export default function JobPostForm({ initialData, onSubmit, isEditing = false, 
   const [description, setDescription] = useState(initialData?.description || '');
   const [tables, setTables] = useState<DynamicTableType[]>(initialData?.tables || []);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [examsList, setExamsList] = useState<any[]>([]);
+
+  React.useEffect(() => {
+    import('@/lib/api/client').then(({ api }) => {
+      api.getExams({ limit: 100 }).then(data => {
+        setExamsList(Array.isArray(data) ? data : []);
+      }).catch(console.error);
+    });
+  }, []);
 
   const { register, handleSubmit, formState: { errors }, reset } = useForm({
     resolver: zodResolver(jobFormSchema),
@@ -63,6 +73,10 @@ export default function JobPostForm({ initialData, onSubmit, isEditing = false, 
           officialWebsite: formData.officialWebsite || '#'
         }
       };
+
+      if (!preparedData.exam) {
+        delete preparedData.exam; // Don't send empty string if no exam selected
+      }
 
       await onSubmit(preparedData);
       
@@ -114,6 +128,22 @@ export default function JobPostForm({ initialData, onSubmit, isEditing = false, 
                 placeholder="SSC"
               />
               {errors.organization && <span className="text-[10px] text-status-danger font-bold">{errors.organization.message as string}</span>}
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-gray-500">Link to Exam Master</label>
+              <select
+                {...register('exam')}
+                className="w-full p-2.5 border border-border-custom rounded text-sm focus:outline-none focus:ring-1 focus:ring-secondary bg-blue-50/50"
+              >
+                <option value="">No Exam Linked (Standalone Job)</option>
+                {examsList.map(exam => (
+                  <option key={exam._id} value={exam._id}>
+                    {exam.title} ({exam.organization})
+                  </option>
+                ))}
+              </select>
+              <p className="text-[9px] text-gray-400 mt-0.5">Linking an exam will automatically show its Historical Cutoffs on this job.</p>
             </div>
 
             <div className="space-y-1">

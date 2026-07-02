@@ -55,6 +55,9 @@ export default function TiptapEditor({
       }),
       Link.configure({
         openOnClick: false,
+        HTMLAttributes: {
+          rel: 'noopener noreferrer nofollow',
+        },
       }),
     ],
     content: value,

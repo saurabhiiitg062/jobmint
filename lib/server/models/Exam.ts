@@ -26,6 +26,13 @@ const ExamSchema = new Schema(
         rows: [[Schema.Types.Mixed]],
       },
     ],
+    historicalCutoffs: [
+      {
+        title: { type: String, required: true },
+        columns: [{ type: String, required: true }],
+        rows: [[Schema.Types.Mixed]],
+      },
+    ],
   },
   {
     timestamps: true,
