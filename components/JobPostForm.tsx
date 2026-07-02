@@ -40,6 +40,7 @@ interface Props {
 export default function JobPostForm({ initialData, onSubmit, isEditing = false, onCancel }: Props) {
   const [description, setDescription] = useState(initialData?.rawData?.description || initialData?.description || '');
   const [tables, setTables] = useState<DynamicTableType[]>(initialData?.tables || []);
+  const [customDates, setCustomDates] = useState<{label: string, date: string}[]>(initialData?.rawData?.customDates || []);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [examsList, setExamsList] = useState<any[]>([]);
 
@@ -75,7 +76,8 @@ export default function JobPostForm({ initialData, onSubmit, isEditing = false, 
         ...formData,
         tables,
         rawData: {
-          description
+          description,
+          customDates
         },
         importantDates: {
           applyStart: formData.applyStart || 'Available Now',
@@ -292,6 +294,57 @@ export default function JobPostForm({ initialData, onSubmit, isEditing = false, 
                 {...register('applyLastDate')}
                 className="w-full p-2.5 border border-border-custom rounded text-sm focus:outline-none focus:ring-1 focus:ring-secondary"
               />
+            </div>
+          </div>
+
+          <div className="mt-4 border border-gray-100 rounded-lg p-4 bg-gray-50">
+            <div className="flex justify-between items-center mb-3">
+              <label className="text-xs font-bold text-gray-600 uppercase">Custom Dates</label>
+              <button 
+                type="button" 
+                onClick={() => setCustomDates([...customDates, { label: '', date: '' }])}
+                className="text-xs bg-white border border-gray-200 px-2 py-1 rounded text-primary hover:bg-gray-100 font-bold"
+              >
+                + Add Date
+              </button>
+            </div>
+            
+            <div className="space-y-2">
+              {customDates.map((cd, index) => (
+                <div key={index} className="flex space-x-2 items-center">
+                  <input
+                    type="text"
+                    value={cd.label}
+                    onChange={(e) => {
+                      const newDates = [...customDates];
+                      newDates[index].label = e.target.value;
+                      setCustomDates(newDates);
+                    }}
+                    placeholder="e.g. Interview Date"
+                    className="flex-1 p-2 border border-border-custom rounded text-sm focus:outline-none focus:ring-1 focus:ring-secondary"
+                  />
+                  <input
+                    type="date"
+                    value={cd.date}
+                    onChange={(e) => {
+                      const newDates = [...customDates];
+                      newDates[index].date = e.target.value;
+                      setCustomDates(newDates);
+                    }}
+                    className="w-40 p-2 border border-border-custom rounded text-sm focus:outline-none focus:ring-1 focus:ring-secondary"
+                  />
+                  <button 
+                    type="button" 
+                    onClick={() => setCustomDates(customDates.filter((_, i) => i !== index))}
+                    className="p-2 text-red-500 hover:bg-red-50 rounded"
+                  >
+                    🗑
+                  </button>
+                </div>
+              ))}
+              {customDates.length === 0 && (
+                <p className="text-xs text-gray-400 italic">No custom dates added. Click + Add Date if needed.</p>
+              )}
             </div>
           </div>
         </div>

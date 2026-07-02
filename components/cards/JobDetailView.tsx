@@ -236,6 +236,7 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
     { label: 'Exam Date', value: formatDate(job.exam?.importantDates?.examDate || job.importantDates?.examDate || job.examDate) || 'As scheduled' },
     { label: 'Category', value: getCategorySummary(job.category) },
     { label: 'Qualification', value: job.exam?.eligibility?.qualification || job.qualification },
+    ...(job.rawData?.customDates?.map((cd: any) => ({ label: cd.label, value: formatDate(cd.date) || 'Check notice' })) || [])
   ];
 
   const summaryDetails: DetailItem[] = [
@@ -709,7 +710,8 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
                       { label: 'Fee Payment Last Date', value: job.exam?.importantDates?.feePaymentLastDate || job.importantDates?.feePaymentLastDate },
                       { label: 'Exam Date', value: job.exam?.importantDates?.examDate || job.importantDates?.examDate || job.examDate },
                       { label: 'Admit Card Release', value: job.exam?.importantDates?.admitCardRelease || job.importantDates?.admitCardRelease },
-                      { label: 'Result Declaration', value: job.exam?.importantDates?.resultDeclaration || job.importantDates?.resultDeclaration }
+                      { label: 'Result Declaration', value: job.exam?.importantDates?.resultDeclaration || job.importantDates?.resultDeclaration },
+                      ...(job.rawData?.customDates?.map((cd: any) => ({ label: cd.label, value: cd.date })) || [])
                     ].filter(item => Boolean(item.value)).map((item) => (
                       <div key={item.label} className="rounded-lg border border-border-custom bg-white p-4">
                         <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">{item.label}</p>
