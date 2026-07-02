@@ -67,7 +67,7 @@ export default async function RootLayout({
     console.error('Failed to fetch today jobs count:', error);
   }
 
-  const gaId = process.env.NEXT_PUBLIC_GA_ID;
+  const gaId = process.env.NEXT_PUBLIC_GA_ID || 'G-8YSMYPTPJ3';
 
   return (
     <html lang="en">
