@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/admin', '/api/'],
     },
-    sitemap: 'https://SelectionSure.com/sitemap.xml',
+    sitemap: 'https://selectionsure.app/sitemap.xml',
   };
 }

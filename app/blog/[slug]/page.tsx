@@ -57,7 +57,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       openGraph: {
         title: blog.seoTitle || `${blog.title} - SelectionSure Blog`,
         description: blog.seoDescription || blog.excerpt || `Read ${blog.title} on SelectionSure Blog.`,
-        url: `https://SelectionSure.com/blog/${slug}`,
+        url: `https://SelectionSure.app/blog/${slug}`,
         type: 'article',
       },
       twitter: {

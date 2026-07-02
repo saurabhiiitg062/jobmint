@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Free Photo & Signature Resizer for Govt Jobs',
     description: 'Compress your passport size photo and signature to exact KB and dimensions required for SSC, UPSC, and Bank forms.',
-    url: 'https://SelectionSure.com/image-resizer',
+    url: 'https://selectionsure.app/image-resizer',
     type: 'website',
   },
   twitter: {
@@ -35,7 +35,7 @@ export default function ImageResizerPage() {
       priceCurrency: 'INR',
     },
     description: 'An online client-side tool to resize and compress photos and signatures for Indian government job application forms (SSC, UPSC, Banking, etc.).',
-    url: 'https://SelectionSure.com/image-resizer',
+    url: 'https://selectionsure.app/image-resizer',
   };
 
   return (

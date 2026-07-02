@@ -7,7 +7,7 @@ export default function TermsPage() {
     <div className="bg-white border border-border-custom rounded-lg p-6 md:p-8 shadow-sm space-y-4 max-w-3xl mx-auto text-xs sm:text-sm text-gray-600 leading-relaxed">
       <h2 className="text-xl font-bold text-secondary border-b pb-2">Terms and Conditions</h2>
       <p>
-        Welcome to SelectionSure! These terms outline the rules and regulations for the use of SelectionSure&apos;s Website, located at SelectionSure.com.
+        Welcome to SelectionSure! These terms outline the rules and regulations for the use of SelectionSure&apos;s Website, located at selectionsure.app.
       </p>
       <p>
         By accessing this website, we assume you accept these terms and conditions. Do not continue to use SelectionSure if you do not agree to take all of the terms and conditions stated on this page.

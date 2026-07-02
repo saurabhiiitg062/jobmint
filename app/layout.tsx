@@ -15,7 +15,7 @@ const notoSans = Noto_Sans({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://SelectionSure.com'),
+  metadataBase: new URL('https://selectionsure.app'),
   title: 'SelectionSure - Latest Government Jobs, Admit Cards & Sarkari Results',
   description: 'Get real-time updates for latest government jobs, SSC, UPSC, Railway (RRB) exams, Admit Cards, Sarkari Results, Syllabi, and Answer Keys on SelectionSure.',
   keywords: 'Sarkari Result, Government Jobs, Free Job Alert, SSC, UPSC, Railway Jobs, Admit Card, Answer Key',
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'SelectionSure - Latest Government Jobs',
     description: 'Get real-time updates for latest government jobs, SSC, UPSC, Railway (RRB) exams, Admit Cards, Sarkari Results, Syllabi, and Answer Keys.',
-    url: 'https://SelectionSure.com',
+    url: 'https://selectionsure.app',
     siteName: 'SelectionSure',
     images: [
       {

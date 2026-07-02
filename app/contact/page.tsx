@@ -15,7 +15,7 @@ export default function ContactPage() {
         <Mail className="w-6 h-6 text-primary" />
         <div>
           <h3 className="font-bold text-gray-800">Email Address</h3>
-          <p className="text-primary font-semibold">support@SelectionSure.com</p>
+          <p className="text-primary font-semibold">support@selectionsure.app</p>
         </div>
       </div>
 

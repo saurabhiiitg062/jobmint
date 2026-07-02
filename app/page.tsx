@@ -71,10 +71,10 @@ export default async function HomePage() {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'SelectionSure',
-    url: 'https://SelectionSure.com',
+    url: 'https://selectionsure.app',
     potentialAction: {
       '@type': 'SearchAction',
-      target: 'https://SelectionSure.com/search?q={search_term_string}',
+      target: 'https://selectionsure.app/search?q={search_term_string}',
       'query-input': 'required name=search_term_string',
     },
   };
@@ -83,8 +83,8 @@ export default async function HomePage() {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'SelectionSure',
-    url: 'https://SelectionSure.com',
-    logo: 'https://SelectionSure.com/asset/branding.png',
+    url: 'https://selectionsure.app',
+    logo: 'https://selectionsure.app/asset/branding.png',
     sameAs: [
       'https://t.me/SelectionSure'
     ]

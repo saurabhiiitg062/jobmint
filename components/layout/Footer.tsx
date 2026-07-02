@@ -41,7 +41,7 @@ export default function Footer() {
             SelectionSure is India&apos;s leading government job update portal. We provide fast, reliable, and real-time alerts for Sarkari Results, Admit Cards, Syllabi, Answer Keys, and Scheme updates.
           </p>
           <div className="pt-2 text-xs">
-            <span className="font-bold text-white">Email:</span> support@SelectionSure.com
+            <span className="font-bold text-white">Email:</span> support@selectionsure.app
           </div>
         </div>
 
@@ -93,7 +93,7 @@ export default function Footer() {
           Disclaimer: SelectionSure is not affiliated with any government organisation. All information published here is sourced from official press notifications and official websites. Job aspirants must verify details independently before applying.
         </p>
         <p className="mt-2 text-gray-400">
-          &copy; {currentYear} SelectionSure.com. All Rights Reserved. Designed for fast and lightweight mobile-first SEO performance.
+          &copy; {currentYear} selectionsure.app. All Rights Reserved. Designed for fast and lightweight mobile-first SEO performance.
         </p>
       </div>
     </footer>

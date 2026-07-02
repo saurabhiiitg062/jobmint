@@ -117,9 +117,9 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://SelectionSure.com' },
-      { '@type': 'ListItem', position: 2, name: job.category, item: `https://SelectionSure.com/${categorySlug}` },
-      { '@type': 'ListItem', position: 3, name: job.title, item: `https://SelectionSure.com/${categorySlug}/${job.slug}` },
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://selectionsure.app' },
+      { '@type': 'ListItem', position: 2, name: job.category, item: `https://selectionsure.app/${categorySlug}` },
+      { '@type': 'ListItem', position: 3, name: job.title, item: `https://selectionsure.app/${categorySlug}/${job.slug}` },
     ],
   };
 
@@ -135,7 +135,7 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
         hiringOrganization: {
           '@type': 'Organization',
           name: job.organization,
-          sameAs: job.importantLinks?.officialWebsite || 'https://SelectionSure.com',
+          sameAs: job.importantLinks?.officialWebsite || 'https://selectionsure.app',
         },
         jobLocation: {
           '@type': 'Place',
@@ -460,7 +460,7 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
       <div className="hidden print:block font-sans text-black bg-white w-full">
         <div className="flex items-center justify-between border-b-2 border-black pb-3 mb-4">
           {/* <div>
-               <h1 className="text-xl font-black uppercase text-black">SelectionSure.com</h1>
+               <h1 className="text-xl font-black uppercase text-black">selectionsure.app</h1>
                <p className="text-xs font-bold mt-0.5 text-gray-700">Fastest Updates for Govt Jobs</p>
             </div> */}
           <div className="flex items-center gap-3 text-right justify-end max-w-[50%]">
@@ -515,7 +515,7 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
             )}
           </tbody>
         </table>
-        <p className="mt-8 text-center text-xs text-gray-600 font-bold border-t border-black pt-2">Printed from SelectionSure.com - Please verify all details from the official notification.</p>
+        <p className="mt-8 text-center text-xs text-gray-600 font-bold border-t border-black pt-2">Printed from selectionsure.app - Please verify all details from the official notification.</p>
       </div>
 
       <div className="print:hidden">

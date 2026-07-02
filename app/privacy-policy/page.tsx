@@ -7,7 +7,7 @@ export default function PrivacyPolicyPage() {
     <div className="bg-white border border-border-custom rounded-lg p-6 md:p-8 shadow-sm space-y-4 max-w-3xl mx-auto text-xs sm:text-sm text-gray-600 leading-relaxed">
       <h2 className="text-xl font-bold text-secondary border-b pb-2">Privacy Policy</h2>
       <p>
-        At SelectionSure, accessible from SelectionSure.com, candidate privacy is one of our main priorities. This document details the types of information we gather and record, and how we handle it.
+        At SelectionSure, accessible from selectionsure.app, candidate privacy is one of our main priorities. This document details the types of information we gather and record, and how we handle it.
       </p>
       <h3 className="font-bold text-gray-800 text-sm">Log Files & Cookies</h3>
       <p>

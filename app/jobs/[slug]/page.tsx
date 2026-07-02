@@ -54,7 +54,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       openGraph: {
         title: job.seoTitle || `${job.title} - SelectionSure`,
         description: job.seoDescription || `Complete details about ${job.title} including eligibility, dates, and application process.`,
-        url: `https://SelectionSure.com/jobs/${slug}`,
+        url: `https://SelectionSure.app/jobs/${slug}`,
         type: 'article',
       },
       twitter: {

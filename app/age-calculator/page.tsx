@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Age Calculator for Govt Jobs - SelectionSure',
     description: 'Calculate your exact age in years, months, and days for government job eligibility.',
-    url: 'https://SelectionSure.com/age-calculator',
+    url: 'https://selectionsure.app/age-calculator',
     type: 'website',
   },
   twitter: {
@@ -35,7 +35,7 @@ export default function AgeCalculatorPage() {
       priceCurrency: 'INR',
     },
     description: 'Calculate exact age in years, months, and days for government job eligibility exams like SSC, UPSC, Banking, and State Govt.',
-    url: 'https://SelectionSure.com/age-calculator',
+    url: 'https://selectionsure.app/age-calculator',
   };
 
   return (
