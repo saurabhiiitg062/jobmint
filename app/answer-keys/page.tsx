@@ -4,6 +4,14 @@ import { api } from '@/lib/api/client';
 import { mockJobs } from '@/lib/mockData';
 import { Job } from '@/types';
 
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Sarkari Exam Answer Keys - SelectionSure',
+  description: 'Download official exam answer keys, solution sheets, and submit answer sheet objections for online exams.',
+};
+
+
 export const revalidate = 300;
 
 export default async function AnswerKeysPage() {

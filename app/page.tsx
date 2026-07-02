@@ -2,10 +2,12 @@ import React from 'react';
 import Link from 'next/link';
 import { Search, Briefcase, FileText, CheckCircle2, ChevronRight, Award, MapPin, Building2, HelpCircle, Clock, Flame, CheckCircle } from 'lucide-react';
 import ExamCalendar from '@/components/ExamCalendar';
+import StateFilterWidget from '@/components/widgets/StateFilterWidget';
 
 import { api } from '@/lib/api/client';
 import { mockJobs, mockBlogs } from '@/lib/mockData';
 import { Job, Blog } from '@/types';
+import StructuredData from '@/components/seo/StructuredData';
 
 // Force SSG by default, revalidate every 300 seconds
 export const revalidate = 300;
@@ -27,6 +29,29 @@ export default async function HomePage() {
   const jobsList = mockJobs;
   const blogsList = mockBlogs;
   const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  type CalendarEvent = { job: Job; date: Date; type: string };
+  const calendarEvents: CalendarEvent[] = [];
+  jobsList.forEach(job => {
+    if (job.importantDates?.applyLastDate) {
+      const d = new Date(job.importantDates.applyLastDate);
+      d.setHours(0, 0, 0, 0);
+      if (d.getTime() >= today.getTime()) {
+        calendarEvents.push({ job, date: d, type: 'Last Date' });
+      }
+    }
+    if (job.importantDates?.examDate) {
+      const d = new Date(job.importantDates.examDate);
+      d.setHours(0, 0, 0, 0);
+      if (d.getTime() >= today.getTime()) {
+        calendarEvents.push({ job, date: d, type: 'Exam Date' });
+      }
+    }
+  });
+
+  calendarEvents.sort((a, b) => a.date.getTime() - b.date.getTime());
+  const upcomingEvents = calendarEvents.slice(0, 5);
 
   // Filter categories
   const latestJobs = jobsList.filter(j => j.category === 'Latest Job').slice(0, 12);
@@ -41,8 +66,33 @@ export default async function HomePage() {
   const states = ['Bihar', 'Karnataka', 'UP', 'Delhi'];
   const organizations = ['SSC', 'UPSC', 'RRB', 'ISRO', 'DRDO', 'IBPS', 'NTA'];
 
+  const websiteSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'SelectionSure',
+    url: 'https://SelectionSure.com',
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: 'https://SelectionSure.com/search?q={search_term_string}',
+      'query-input': 'required name=search_term_string',
+    },
+  };
+
+  const orgSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'SelectionSure',
+    url: 'https://SelectionSure.com',
+    logo: 'https://SelectionSure.com/asset/branding.png',
+    sameAs: [
+      'https://t.me/SelectionSure'
+    ]
+  };
+
   return (
     <div className="space-y-12">
+      <StructuredData data={websiteSchema} />
+      <StructuredData data={orgSchema} />
       {/* ── Hero ── */}
       <section style={{ background: 'linear-gradient(135deg, #eef2ff 0%, #e8f4fd 60%, #f0f9ff 100%)' }} className="rounded-xl shadow-sm overflow-hidden border border-blue-100">
         {/* Yellow top bar accent */}
@@ -143,10 +193,10 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Main Jobs/Admit Cards/Results Grid */}
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Exam Calendar Card — reference design */}
-        <div className="col-span-full lg:col-span-1">
+      {/* Main Content Layout */}
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+        {/* Left Sidebar */}
+        <aside className="xl:col-span-1 flex flex-col gap-6">
           <div className="bg-white border border-border-custom rounded-xl shadow-sm overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
@@ -161,27 +211,24 @@ export default async function HomePage() {
 
             {/* Event list */}
             <ul className="divide-y divide-gray-100">
-              {latestJobs.slice(0, 5).map((job) => {
-                const dateStr = job.importantDates?.applyLastDate || job.importantDates?.examDate;
-                const d = dateStr ? new Date(dateStr) : null;
-                const mon = d ? d.toLocaleString('en-IN', { month: 'short' }).toUpperCase() : '';
-                const day = d ? d.getDate().toString().padStart(2, '0') : '';
-                const daysLeft = d ? Math.ceil((d.getTime() - Date.now()) / 86400000) : null;
-                const isUrgent = daysLeft !== null && daysLeft >= 0 && daysLeft <= 7;
-                const eventType = job.importantDates?.examDate && !job.importantDates?.applyLastDate
-                  ? 'Exam Date' : 'Last Date to Apply';
+              {upcomingEvents.length > 0 ? upcomingEvents.map((event, idx) => {
+                const { job, date: d, type: eventType } = event;
+                const mon = d.toLocaleString('en-IN', { month: 'short' }).toUpperCase();
+                const day = d.getDate().toString().padStart(2, '0');
+                const daysLeft = Math.ceil((d.getTime() - today.getTime()) / 86400000);
+                const isUrgent = daysLeft >= 0 && daysLeft <= 7;
                 return (
-                  <li key={job._id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50 transition-colors">
+                  <li key={`${job._id}-${idx}`} className="flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50 transition-colors">
                     {/* Date pill */}
                     <div className={`shrink-0 w-14 rounded-lg text-center py-1.5 ${
                       isUrgent ? 'bg-red-50 border border-red-200' : 'bg-blue-50 border border-blue-100'
                     }`}>
                       <div className={`text-[10px] font-bold tracking-wide ${
                         isUrgent ? 'text-red-500' : 'text-blue-400'
-                      }`}>{mon || '—'}</div>
+                      }`}>{mon}</div>
                       <div className={`text-xl font-extrabold leading-tight ${
                         isUrgent ? 'text-red-600' : 'text-secondary'
-                      }`}>{day || '??'}</div>
+                      }`}>{day}</div>
                     </div>
                     {/* Info */}
                     <div className="min-w-0">
@@ -191,11 +238,13 @@ export default async function HomePage() {
                       >
                         {job.title}
                       </Link>
-                      <span className="text-xs text-gray-500">{eventType}</span>
+                      <span className="text-xs text-gray-500">{eventType} {daysLeft === 0 ? '(Today)' : daysLeft === 1 ? '(Tomorrow)' : `(in ${daysLeft} days)`}</span>
                     </div>
                   </li>
                 );
-              })}
+              }) : (
+                <li className="px-5 py-8 text-center text-xs text-gray-400 font-medium">No upcoming exams or dates.</li>
+              )}
             </ul>
 
             {/* Telegram CTA */}
@@ -227,8 +276,12 @@ export default async function HomePage() {
               </a>
             </div>
           </div>
-        </div>
-        <div className="bg-white border border-border-custom rounded-lg shadow-sm flex flex-col">
+          
+          <StateFilterWidget />
+        </aside>
+
+        <section className="xl:col-span-3 grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="bg-white border border-border-custom rounded-lg shadow-sm flex flex-col">
           <div className="bg-primary text-white px-4 py-3 rounded-t-lg flex items-center justify-between">
             <h3 className="font-bold text-sm uppercase tracking-wider flex items-center space-x-2">
               <Briefcase className="w-4 h-4 text-accent" />
@@ -313,7 +366,8 @@ export default async function HomePage() {
             )}
           </div>
         </div>
-      </section>
+        </section>
+      </div>
 
       {/* Answer Keys, Syllabus, Schemes Grid */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">

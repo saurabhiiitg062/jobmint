@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
 
 const SEGMENT_LABELS: Record<string, string> = {
@@ -62,7 +63,6 @@ export default function Breadcrumbs() {
     })),
   ];
 
-
   return (
     <nav
       aria-label="Breadcrumb"
@@ -81,7 +81,26 @@ export default function Breadcrumbs() {
             )}
           </li>
         ))}
+        {((pathname.split('/').length >= 3 && pathname !== '/search') || pathname === '/admin') && (
+          <Suspense fallback={null}>
+            <TabCrumb />
+          </Suspense>
+        )}
       </ol>
     </nav>
+  );
+}
+
+function TabCrumb() {
+  const searchParams = useSearchParams();
+  const tab = searchParams.get('tab');
+  
+  if (!tab || tab === 'analytics' || tab === 'overview') return null;
+
+  return (
+    <li className="flex items-center gap-2">
+      <span className="text-slate-400">{'>'}</span>
+      <span className="font-semibold text-slate-900">{getSegmentLabel(tab)}</span>
+    </li>
   );
 }

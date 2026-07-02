@@ -1,5 +1,7 @@
 import React from 'react';
 
+export const revalidate = 86400;
+
 export default function DisclaimerPage() {
   return (
     <div className="bg-white border border-border-custom rounded-lg p-6 md:p-8 shadow-sm space-y-6 max-w-3xl mx-auto text-xs sm:text-sm text-gray-600 leading-relaxed">

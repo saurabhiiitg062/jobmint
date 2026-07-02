@@ -4,6 +4,14 @@ import { api } from '@/lib/api/client';
 import { mockJobs } from '@/lib/mockData';
 import { Job } from '@/types';
 
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Sarkari Exam Syllabus - SelectionSure',
+  description: 'Download complete exam syllabus, pattern structures, written test marking schemes, and reference guidelines.',
+};
+
+
 export const revalidate = 300;
 
 export default async function SyllabusPage() {

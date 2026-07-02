@@ -4,6 +4,14 @@ import { api } from '@/lib/api/client';
 import { mockJobs } from '@/lib/mockData';
 import { Job } from '@/types';
 
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Latest Exam Admit Cards - SelectionSure',
+  description: 'Download call letters, hall tickets, exam schedules, and admit cards for government recruitments (SSC, Railway, Banking, UPSC, and State Boards).',
+};
+
+
 export const revalidate = 300;
 
 export default async function AdmitCardsPage() {

@@ -4,6 +4,14 @@ import { api } from '@/lib/api/client';
 import { mockJobs } from '@/lib/mockData';
 import { Job } from '@/types';
 
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Sarkari Exam Results - SelectionSure',
+  description: 'Check government recruitment exam results, cut-off marks, merit lists, and candidate selections online.',
+};
+
+
 export const revalidate = 300;
 
 export default async function ResultsPage() {

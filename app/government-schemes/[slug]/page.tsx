@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import React from 'react';
 import { notFound } from 'next/navigation';
 import JobDetailView from '@/components/cards/JobDetailView';
@@ -24,6 +25,22 @@ export async function generateStaticParams() {
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  try {
+    const job = await api.getJobBySlug(slug).catch(() => null) || mockJobs.find(j => j.slug === slug);
+    if (!job) return {};
+    
+    return {
+      title: job.seoTitle || `${job.title} - SelectionSure`,
+      description: job.seoDescription || `Complete details about ${job.title} including eligibility, dates, and application process.`,
+      keywords: job.focusKeyword || job.title,
+    };
+  } catch (e) {
+    return {};
+  }
 }
 
 export default async function SchemeSlugPage({ params }: PageProps) {

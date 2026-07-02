@@ -15,22 +15,64 @@ const notoSans = Noto_Sans({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://SelectionSure.com'),
   title: 'SelectionSure - Latest Government Jobs, Admit Cards & Sarkari Results',
   description: 'Get real-time updates for latest government jobs, SSC, UPSC, Railway (RRB) exams, Admit Cards, Sarkari Results, Syllabi, and Answer Keys on SelectionSure.',
   keywords: 'Sarkari Result, Government Jobs, Free Job Alert, SSC, UPSC, Railway Jobs, Admit Card, Answer Key',
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: 'SelectionSure - Latest Government Jobs',
+    description: 'Get real-time updates for latest government jobs, SSC, UPSC, Railway (RRB) exams, Admit Cards, Sarkari Results, Syllabi, and Answer Keys.',
+    url: 'https://SelectionSure.com',
+    siteName: 'SelectionSure',
+    images: [
+      {
+        url: '/asset/branding.png',
+        width: 800,
+        height: 600,
+        alt: 'SelectionSure Logo',
+      },
+    ],
+    locale: 'en_IN',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'SelectionSure - Latest Government Jobs',
+    description: 'Get real-time updates for latest government jobs, SSC, UPSC, Railway (RRB) exams, Admit Cards, Sarkari Results, Syllabi, and Answer Keys.',
+    creator: '@selectionsure',
+    images: ['/asset/branding.png'],
+  },
 };
 
-export default function RootLayout({
+import { connectToDatabase } from '@/lib/server/db';
+import { Job as JobModel } from '@/lib/server/models/Job';
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Fetch today's job count
+  let todayJobsCount = 0;
+  try {
+    await connectToDatabase();
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    todayJobsCount = await JobModel.countDocuments({ createdAt: { $gte: startOfToday } });
+    // todayJobsCount = 10;
+  } catch (error) {
+    console.error('Failed to fetch today jobs count:', error);
+  }
+
   return (
     <html lang="en">
       <body className={`${notoSans.variable} antialiased min-h-screen flex flex-col pb-14 md:pb-0`}>
         <ReduxProvider>
-          <div className="sticky top-0 z-50">
-            <Navbar />
+          <div className="sticky top-0 z-50 print:hidden">
+            <Navbar todayJobsCount={todayJobsCount} />
             <BreakingNews />
             <div className="max-w-7xl w-full mx-auto px-4">
               <Breadcrumbs />
@@ -39,8 +81,10 @@ export default function RootLayout({
           <main className="flex-grow max-w-7xl w-full mx-auto px-4 py-6 md:py-10">
             {children}
           </main>
-          <Footer />
-          <StickyMobileTabs />
+          <div className="print:hidden">
+            <Footer />
+            <StickyMobileTabs />
+          </div>
         </ReduxProvider>
       </body>
     </html>

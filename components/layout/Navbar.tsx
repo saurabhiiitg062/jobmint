@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { Search, Menu, X, Bell, Moon } from 'lucide-react';
 import logo from '../../public/asset/branding.png';
 
-export default function Navbar() {
+export default function Navbar({ todayJobsCount = 0 }: { todayJobsCount?: number }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
@@ -28,12 +28,13 @@ export default function Navbar() {
     { name: 'Answer Key', href: '/answer-keys' },
     { name: 'Syllabus', href: '/syllabus' },
     { name: 'Age Calculator', href: '/age-calculator' },
+    { name: 'Photo Resizer', href: '/image-resizer' },
     { name: 'Govt Schemes', href: '/government-schemes' },
     { name: 'Blog', href: '/blog' },
   ];
 
   return (
-    <header className="w-full">
+    <header className="w-full print:hidden">
       {/* Top Bar */}
       <div className="bg-primary px-4 py-2 text-xs font-medium text-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
@@ -146,9 +147,14 @@ export default function Navbar() {
               <Link
                 key={link.name}
                 href={link.href}
-                className="px-4 py-3 text-sm font-semibold whitespace-nowrap hover:bg-primary transition-colors"
+                className="px-4 py-3 text-sm font-semibold whitespace-nowrap hover:bg-primary transition-colors flex items-center gap-1.5"
               >
                 {link.name}
+                {link.name === 'Latest Jobs' && todayJobsCount > 0 && (
+                  <span className="flex h-5 items-center justify-center rounded-full bg-accent px-2 text-[10px] font-bold text-primary shadow-sm animate-pulse">
+                    {todayJobsCount} New
+                  </span>
+                )}
               </Link>
             ))}
           </div>
@@ -161,9 +167,14 @@ export default function Navbar() {
                   key={link.name}
                   href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block px-4 py-2.5 text-sm font-semibold hover:bg-primary transition-colors"
+                  className="block px-4 py-2.5 text-sm font-semibold hover:bg-primary transition-colors flex items-center justify-between"
                 >
-                  {link.name}
+                  <span>{link.name}</span>
+                  {link.name === 'Latest Jobs' && todayJobsCount > 0 && (
+                    <span className="flex h-5 items-center justify-center rounded-full bg-accent px-2 text-[10px] font-bold text-primary shadow-sm animate-pulse">
+                      {todayJobsCount} New
+                    </span>
+                  )}
                 </Link>
               ))}
 

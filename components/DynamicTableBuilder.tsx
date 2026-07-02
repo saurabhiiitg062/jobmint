@@ -72,16 +72,16 @@ export default function DynamicTableBuilder({ tables, onChange }: Props) {
 
   // Add custom table
   const addCustomTable = () => {
-    const title = prompt('Enter table title (e.g., Vacancy Details, Application Fee, Exam Pattern):');
-    if (!title) return;
-
     const newTable: DynamicTableType = {
-      title,
+      title: 'New Custom Table',
       columns: ['Column 1'],
       rows: [['']]
     };
 
     onChange([...tables, newTable]);
+    
+    // Automatically trigger edit mode for the new table's title
+    setEditingTableIndex(tables.length);
   };
 
   // Delete table

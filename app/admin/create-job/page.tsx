@@ -45,6 +45,11 @@ export default function CreateJobPage() {
       return;
     }
 
+    if (!formData.category) {
+      setError('Category is a required field.');
+      return;
+    }
+
     if (!formData.tables || formData.tables.length === 0) {
       setError('Add at least one table');
       return;
@@ -54,10 +59,13 @@ export default function CreateJobPage() {
     setError('');
 
     try {
+      // API payload
       const payload = {
         ...formData,
         status: 'published',
-        rawData: {} // MongoDB ke liye
+        rawData: {
+          description: formData.description // Save Tiptap editor content here
+        }
       };
 
       console.log('Sending payload:', payload);

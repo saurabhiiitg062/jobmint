@@ -4,6 +4,14 @@ import { api } from '@/lib/api/client';
 import { mockJobs } from '@/lib/mockData';
 import { Job } from '@/types';
 
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Government Schemes - SelectionSure',
+  description: 'Stay updated with latest central and state government social welfare schemes, pensions, farmer aids, and scholarships.',
+};
+
+
 export const revalidate = 300;
 
 export default async function SchemesPage() {

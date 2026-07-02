@@ -9,81 +9,68 @@ import { RootState } from '@/store/store';
 import { setCredentials, logout } from '@/store/authSlice';
 import { api } from '@/lib/api/client';
 import { Job, Blog } from '@/types';
-import TiptapEditor from "@/components/TiptapEditor";
-import AdminJobEditor from "@/components/AdminJobEditor";
-import DynamicTableBuilder from "@/components/DynamicTableBuilder";
-import JobPostForm from "@/components/JobPostForm";
-import {
-  Lock, Mail, BarChart3, Plus, Trash2, FileEdit, Eye, LogOut,
-  Settings, CheckSquare, Upload, Calendar, Database
-} from 'lucide-react';
+import { Lock, Mail, BarChart3, Plus, Settings, LogOut, FileText, Database, GraduationCap, ChevronRight } from 'lucide-react';
 
-// Form Validations with Zod
+import AnalyticsTab from '@/components/admin/AnalyticsTab';
+import JobsTab from '@/components/admin/JobsTab';
+import BlogsTab from '@/components/admin/BlogsTab';
+import ExamsTab from '@/components/admin/ExamsTab';
+import MasterDataTab from '@/components/admin/MasterDataTab';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
+
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters')
 });
 
-const jobFormSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  organization: z.string().min(1, 'Organization name is required'),
-  postName: z.string().min(1, 'Post name is required'),
-  vacancy: z.number().min(0).default(0),
-  salary: z.string().optional(),
-  qualification: z.string().min(1, 'Qualification is required'),
-  ageLimit: z.string().optional(),
-  applicationFee: z.string().optional(),
-  selectionProcess: z.string().optional(),
-  category: z.string().min(1, 'Category is required'),
-  state: z.string().optional(),
-  applyOnline: z.string().optional(),
-  downloadNotification: z.string().optional(),
-  officialWebsite: z.string().optional(),
-  seoTitle: z.string().optional(),
-  seoDescription: z.string().optional(),
-  applyStart: z.string().optional(),
-  applyLastDate: z.string().optional()
-});
-
 export default function AdminDashboard() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
+      <AdminDashboardContent />
+    </Suspense>
+  );
+}
+
+function AdminDashboardContent() {
   const [ready, setReady] = useState(false);
-  const [description, setDescription] = useState("");
-  const [tables, setTables] = useState<any[]>([]);
-  useEffect(() => {
-    setReady(true);
-  }, []);
-  
+  useEffect(() => { setReady(true); }, []);
 
   const dispatch = useDispatch();
-  const { isAuthenticated, admin, token } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, admin } = useSelector((state: RootState) => state.auth);
   
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get('tab') as any;
 
-  // Local state
-  const [activeTab, setActiveTab] = useState<'analytics' | 'jobs' | 'blogs' | 'bulk'>('analytics');
+  // Tabs: analytics, jobs, blogs, exams, master
+  const [activeTab, setActiveTabState] = useState<'analytics' | 'jobs' | 'blogs' | 'exams' | 'master'>(tabParam || 'analytics');
+  
+  const setActiveTab = (tab: string) => {
+    setActiveTabState(tab as any);
+    router.replace(`?tab=${tab}`, { scroll: false });
+  };
+  
+  // Data State
   const [jobs, setJobs] = useState<Job[]>([]);
   const [blogs, setBlogs] = useState<Blog[]>([]);
-  const [stats, setStats] = useState<any>({
-    totalJobs: 0,
-    totalBlogs: 0,
-    totalVisitors: 0,
-    mostViewedJobs: [],
-    mostViewedBlogs: [],
-    trafficOverview: []
-  });
+  const [stats, setStats] = useState<any>({});
+  
+  // UI State
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
-  const [isEditing, setIsEditing] = useState<string | null>(null);
+  
+  // Editing State
+  const [isEditingJob, setIsEditingJob] = useState<string | null>(null);
+  const [isEditingBlog, setIsEditingBlog] = useState<string | null>(null);
 
-  // Forms
+  // Job Form Data references for when handleEditSetup is called
+  const [jobEditData, setJobEditData] = useState<Job | null>(null);
+
   const { register: registerLogin, handleSubmit: handleLoginSubmit, formState: { errors: loginErrors } } = useForm({
     resolver: zodResolver(loginSchema)
   });
 
-  const { register: registerJob, handleSubmit: handleJobSubmit, reset: resetJobForm, setValue: setJobValue } = useForm({
-    resolver: zodResolver(jobFormSchema)
-  });
-
-  // Load Data
   useEffect(() => {
     if (isAuthenticated) {
       loadStats();
@@ -97,17 +84,9 @@ export default function AdminDashboard() {
       const data = await api.getDashboardStats();
       setStats(data);
     } catch (e: any) {
-      console.warn('Backend offline, using local admin metrics');
       setStats({
-        totalJobs: 10,
-        totalBlogs: 2,
-        totalVisitors: 4500,
-        mostViewedJobs: [
-          { title: 'SSC MTS 2026', views: 890, category: 'Latest Job' },
-          { title: 'Bihar Police Constable', views: 520, category: 'Latest Job' }
-        ],
-        mostViewedBlogs: [],
-        trafficOverview: []
+        totalJobs: 10, totalBlogs: 2, totalVisitors: 4500,
+        mostViewedJobs: []
       });
     }
   };
@@ -116,21 +95,16 @@ export default function AdminDashboard() {
     try {
       const data = await api.getJobs({ limit: 100 });
       setJobs(data.jobs);
-    } catch (e) {
-      setJobs([]);
-    }
+    } catch (e) { setJobs([]); }
   };
 
   const loadBlogs = async () => {
     try {
       const data = await api.getBlogs({ limit: 100 });
       setBlogs(data.blogs);
-    } catch (e) {
-      setBlogs([]);
-    }
+    } catch (e) { setBlogs([]); }
   };
 
-  // Login handler
   const onLogin = async (data: any) => {
     setErrorMsg('');
     try {
@@ -138,46 +112,34 @@ export default function AdminDashboard() {
       dispatch(setCredentials({ token: res.token, admin: res.admin }));
       setSuccessMsg('Logged in successfully!');
     } catch (err: any) {
-      setErrorMsg(err.message || 'Login failed. Try using default: admin@SelectionSure.com / adminpassword123');
+      setErrorMsg(err.message || 'Login failed.');
     }
   };
 
-  // Save Job handler
+  // JOB HANDLERS
   const onSaveJob = async (formData: any) => {
-    setErrorMsg('');
-    setSuccessMsg('');
+    setErrorMsg(''); setSuccessMsg('');
     const preparedData = {
       ...formData,
-      description,
-      tables,
-      importantDates: {
-        applyStart: 'Available Now',
-        applyLastDate: 'Apply Soon'
-      },
+      importantDates: { applyStart: 'Available Now', applyLastDate: 'Apply Soon' },
       importantLinks: {
         applyOnline: formData.applyOnline || '#',
         downloadNotification: formData.downloadNotification || '#',
         officialWebsite: formData.officialWebsite || '#'
       }
     };
-
     try {
-      if (isEditing) {
-        await api.updateJob(isEditing, preparedData);
+      if (isEditingJob) {
+        await api.updateJob(isEditingJob, preparedData);
         setSuccessMsg('Job updated successfully');
-        setIsEditing(null);
       } else {
         await api.createJob(preparedData);
         setSuccessMsg('Job created successfully');
       }
-      resetJobForm();
-      setDescription('');
-      setTables([]);
-      loadJobs();
-      loadStats();
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Action failed on server.');
-    }
+      setIsEditingJob(null);
+      setJobEditData(null);
+      loadJobs(); loadStats();
+    } catch (err: any) { setErrorMsg(err.message || 'Action failed.'); }
   };
 
   const handleDeleteJob = async (id: string) => {
@@ -185,111 +147,98 @@ export default function AdminDashboard() {
       try {
         await api.deleteJob(id);
         setSuccessMsg('Job deleted successfully');
-        loadJobs();
-        loadStats();
-      } catch (err: any) {
-        setErrorMsg(err.message || 'Failed to delete');
-      }
+        loadJobs(); loadStats();
+      } catch (err: any) { setErrorMsg(err.message || 'Failed to delete'); }
     }
   };
 
-  // Edit Job Setup
-  const handleEditSetup = (job: Job) => {
-    setIsEditing(job._id);
-    setJobValue('title', job.title);
-    setJobValue('organization', job.organization);
-    setJobValue('postName', job.postName);
-    setJobValue('vacancy', job.vacancy);
-    setJobValue('salary', job.salary || '');
-    setJobValue('qualification', job.qualification);
-    setJobValue('ageLimit', job.ageLimit || '');
-    setJobValue('applicationFee', job.applicationFee || '');
-    setJobValue('selectionProcess', job.selectionProcess || '');
-    setJobValue('category', job.category);
-    setJobValue('state', job.state || '');
-    setJobValue('applyOnline', job.importantLinks?.applyOnline || '');
-    setJobValue('downloadNotification', job.importantLinks?.downloadNotification || '');
-    setJobValue('officialWebsite', job.importantLinks?.officialWebsite || '');
-    setJobValue('seoTitle', job.seoTitle || '');
-    setJobValue('seoDescription', job.seoDescription || '');
-    setDescription(job.description || '');
-    setTables(job.tables || []);
+  const handleEditJobSetup = (job: Job) => {
+    setIsEditingJob(job._id);
+    setJobEditData(job);
     setActiveTab('jobs');
   };
 
-  if (!ready) {
-    return null;
-  }
+  const resetJobEditState = () => {
+    setIsEditingJob(null);
+    setJobEditData(null);
+  };
+
+  // BLOG HANDLERS
+  const onSaveBlog = async (formData: any) => {
+    setErrorMsg(''); setSuccessMsg('');
+    try {
+      if (isEditingBlog) {
+        await api.updateBlog(isEditingBlog, formData);
+        setSuccessMsg('Blog updated successfully');
+      } else {
+        await api.createBlog(formData);
+        setSuccessMsg('Blog created successfully');
+      }
+      setIsEditingBlog(null);
+      loadBlogs(); loadStats();
+    } catch (err: any) { setErrorMsg(err.message || 'Action failed.'); }
+  };
+
+  const handleDeleteBlog = async (id: string) => {
+    if (confirm('Are you sure you want to delete this blog?')) {
+      try {
+        await api.deleteBlog(id);
+        setSuccessMsg('Blog deleted successfully');
+        loadBlogs(); loadStats();
+      } catch (err: any) { setErrorMsg(err.message || 'Failed to delete blog'); }
+    }
+  };
+
+  const handleEditBlogSetup = (blog: Blog) => {
+    setIsEditingBlog(blog._id);
+    setActiveTab('blogs');
+  };
+
+  const resetBlogEditState = () => {
+    setIsEditingBlog(null);
+  };
+
+  if (!ready) return null;
 
   if (!isAuthenticated) {
     return (
       <div className="max-w-md mx-auto my-12 bg-white border border-border-custom p-6 md:p-8 rounded-lg shadow-sm space-y-6">
         <div className="text-center space-y-2">
-          <div className="bg-primary text-white font-bold p-3 rounded-full w-12 h-12 flex items-center justify-center mx-auto text-xl">
-            JJ
-          </div>
+          <div className="bg-primary text-white font-bold p-3 rounded-full w-12 h-12 flex items-center justify-center mx-auto text-xl">JJ</div>
           <h2 className="text-2xl font-bold text-secondary">Admin Login</h2>
-          <p className="text-xs text-gray-400 font-medium">SelectionSure Exam Update Management Portal</p>
+          <p className="text-xs text-gray-400 font-medium">Jobmint Management Portal</p>
         </div>
-
-        {errorMsg && (
-          <div className="bg-red-50 text-status-danger text-xs font-semibold p-3 border border-red-200 rounded">
-            {errorMsg}
-          </div>
-        )}
-
+        {errorMsg && <div className="bg-red-50 text-status-danger text-xs font-semibold p-3 border border-red-200 rounded">{errorMsg}</div>}
         <form onSubmit={handleLoginSubmit(onLogin)} className="space-y-4">
           <div className="space-y-1">
-            <label className="text-xs font-bold text-gray-500 uppercase flex items-center space-x-1">
-              <Mail className="w-3.5 h-3.5" />
-              <span>Email Address</span>
-            </label>
-            <input
-              type="email"
-              {...registerLogin('email')}
-              placeholder="admin@SelectionSure.com"
-              className="w-full p-2.5 border border-border-custom rounded focus:outline-none focus:ring-1 focus:ring-secondary text-sm"
-            />
-            {loginErrors.email && <span className="text-[10px] text-status-danger font-bold">{loginErrors.email.message as string}</span>}
+            <label className="text-xs font-bold text-gray-500 uppercase flex items-center space-x-1"><Mail className="w-3.5 h-3.5" /><span>Email</span></label>
+            <input type="email" {...registerLogin('email')} className="w-full p-2.5 border rounded focus:ring-1 text-sm" />
           </div>
-
           <div className="space-y-1">
-            <label className="text-xs font-bold text-gray-500 uppercase flex items-center space-x-1">
-              <Lock className="w-3.5 h-3.5" />
-              <span>Password</span>
-            </label>
-            <input
-              type="password"
-              {...registerLogin('password')}
-              placeholder="••••••••"
-              className="w-full p-2.5 border border-border-custom rounded focus:outline-none focus:ring-1 focus:ring-secondary text-sm"
-            />
-            {loginErrors.password && <span className="text-[10px] text-status-danger font-bold">{loginErrors.password.message as string}</span>}
+            <label className="text-xs font-bold text-gray-500 uppercase flex items-center space-x-1"><Lock className="w-3.5 h-3.5" /><span>Password</span></label>
+            <input type="password" {...registerLogin('password')} className="w-full p-2.5 border rounded focus:ring-1 text-sm" />
           </div>
-
-          <button
-            type="submit"
-            className="w-full bg-primary hover:bg-[#600000] text-white p-3 rounded font-bold text-sm tracking-wide transition-colors flex items-center justify-center space-x-2"
-          >
-            <span>Access Dashboard</span>
-          </button>
+          <button type="submit" className="w-full bg-primary hover:bg-[#600000] text-white p-3 rounded font-bold text-sm">Login</button>
         </form>
-
-        <div className="bg-gray-50 p-3 rounded text-[11px] text-gray-500 border border-gray-150">
-          <strong>Initial Failsafe Credentials:</strong><br />
-          Email: <code className="bg-gray-200 px-1 rounded">admin@SelectionSure.com</code><br />
-          Password: <code className="bg-gray-200 px-1 rounded">adminpassword123</code>
-        </div>
       </div>
     );
   }
 
+  const navItems = [
+    { id: 'analytics', label: 'Dashboard', icon: BarChart3 },
+    { id: 'jobs', label: 'Jobs', icon: Plus },
+    { id: 'exams', label: 'Exams & Results', icon: GraduationCap },
+    { id: 'blogs', label: 'Blogs', icon: FileText },
+    { id: 'master', label: 'Master Data', icon: Database },
+    { id: 'settings', label: 'Settings', icon: Settings },
+  ];
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 max-w-[1400px] mx-auto">
       {/* Header bar */}
-      <div className="bg-white border border-border-custom rounded-lg p-4 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 shadow-sm">
+      <div className="bg-white border border-border-custom rounded-lg p-4 flex justify-between items-center shadow-sm">
         <div>
-          <h2 className="text-lg font-bold text-secondary">SelectionSure Control Center</h2>
+          <h2 className="text-lg font-bold text-secondary">Control Center</h2>
           <p className="text-xs text-gray-400">Welcome, {admin?.name || 'Administrator'} ({admin?.role})</p>
         </div>
         <button
@@ -301,147 +250,79 @@ export default function AdminDashboard() {
         </button>
       </div>
 
-      {/* Tabs list */}
-      <div className="flex border-b border-border-custom space-x-1 overflow-x-auto">
-        <button
-          onClick={() => setActiveTab('analytics')}
-          className={`px-4 py-2.5 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${
-            activeTab === 'analytics' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-secondary'
-          }`}
-        >
-          <span className="flex items-center space-x-1.5">
-            <BarChart3 className="w-4 h-4" />
-            <span>Analytics</span>
-          </span>
-        </button>
-        <button
-          onClick={() => setActiveTab('jobs')}
-          className={`px-4 py-2.5 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${
-            activeTab === 'jobs' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-secondary'
-          }`}
-        >
-          <span className="flex items-center space-x-1.5">
-            <Plus className="w-4 h-4" />
-            <span>Job Management</span>
-          </span>
-        </button>
-        <button
-          onClick={() => setActiveTab('blogs')}
-          className={`px-4 py-2.5 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${
-            activeTab === 'blogs' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-secondary'
-          }`}
-        >
-          <span className="flex items-center space-x-1.5">
-            <Settings className="w-4 h-4" />
-            <span>Blogs</span>
-          </span>
-        </button>
-      </div>
-
       {successMsg && (
-        <div className="bg-green-50 text-status-success text-xs font-semibold p-3 border border-green-200 rounded">
-          {successMsg}
-        </div>
+        <div className="bg-green-50 text-status-success text-xs font-semibold p-3 border border-green-200 rounded">{successMsg}</div>
       )}
 
-      {/* TAB CONTENT: ANALYTICS */}
-      {activeTab === 'analytics' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <div className="bg-white border border-border-custom rounded-lg p-5 shadow-sm space-y-2">
-              <span className="text-xs uppercase text-gray-400 font-bold">Total Job Vacancies</span>
-              <p className="text-3xl font-extrabold text-primary">{stats.totalJobs}</p>
-            </div>
-            <div className="bg-white border border-border-custom rounded-lg p-5 shadow-sm space-y-2">
-              <span className="text-xs uppercase text-gray-400 font-bold">Total Articles/Blogs</span>
-              <p className="text-3xl font-extrabold text-secondary">{stats.totalBlogs}</p>
-            </div>
-            <div className="bg-white border border-border-custom rounded-lg p-5 shadow-sm space-y-2">
-              <span className="text-xs uppercase text-gray-400 font-bold">Total Visitors (Monthly)</span>
-              <p className="text-3xl font-extrabold text-success">{stats.totalVisitors}</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white border border-border-custom rounded-lg p-5 shadow-sm space-y-4">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-secondary border-b pb-2">Most Viewed Jobs</h3>
-              <div className="space-y-3">
-                {stats.mostViewedJobs?.map((j: any, idx: number) => (
-                  <div key={idx} className="flex justify-between items-center text-xs border-b pb-2">
-                    <span className="font-semibold text-gray-700 truncate max-w-[200px]">{j.title}</span>
-                    <span className="bg-gray-100 px-2 py-0.5 rounded font-bold text-gray-500">{j.views} views</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="bg-white border border-border-custom rounded-lg p-5 shadow-sm space-y-4">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-secondary border-b pb-2">Admin Actions</h3>
-              <div className="grid grid-cols-2 gap-3 text-center">
-                <button onClick={() => setActiveTab('jobs')} className="bg-primary hover:bg-[#600000] text-white p-3 rounded text-xs font-bold transition-colors">
-                  Add New Job
-                </button>
-                <button onClick={() => setActiveTab('blogs')} className="bg-secondary hover:bg-[#002244] text-white p-3 rounded text-xs font-bold transition-colors">
-                  Create Blog Post
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+      {errorMsg && (
+        <div className="bg-red-50 text-status-danger text-xs font-semibold p-3 border border-red-200 rounded">{errorMsg}</div>
       )}
 
-      {/* TAB CONTENT: JOBS */}
-      {activeTab === 'jobs' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Job Form */}
-          <div className="lg:col-span-2">
-            <JobPostForm
-              initialData={isEditing ? jobs.find(j => j._id === isEditing) : undefined}
-              onSubmit={onSaveJob}
-              isEditing={!!isEditing}
-              onCancel={() => {
-                setIsEditing(null);
-                resetJobForm();
-                setDescription('');
-                setTables([]);
-              }}
-            />
-          </div>
-
-          {/* Job List */}
-          <div className="bg-white border border-border-custom rounded-lg p-5 shadow-sm space-y-4">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-secondary border-b pb-2">Active Listings</h3>
-            <div className="space-y-3 max-h-[500px] overflow-y-auto">
-              {jobs.map((job) => (
-                <div key={job._id} className="border border-gray-100 p-3 rounded space-y-2 hover:border-gray-300">
-                  <span className="text-[9px] uppercase font-extrabold text-primary bg-red-50 px-1.5 py-0.5 rounded">{job.category}</span>
-                  <h4 className="font-bold text-xs text-gray-700 leading-snug">{job.title}</h4>
-                  <div className="flex space-x-2 pt-1 border-t border-gray-50">
-                    <button onClick={() => handleEditSetup(job)} className="text-[10px] text-secondary font-bold flex items-center space-x-0.5 hover:underline">
-                      <FileEdit className="w-3.5 h-3.5" />
-                      <span>Edit</span>
-                    </button>
-                    <button onClick={() => handleDeleteJob(job._id)} className="text-[10px] text-status-danger font-bold flex items-center space-x-0.5 hover:underline">
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>Delete</span>
-                    </button>
-                  </div>
+      {/* Main Layout */}
+      <div className="flex flex-col md:flex-row gap-6">
+        
+        {/* Sidebar */}
+        <div className="w-full md:w-64 flex-shrink-0">
+          <div className="bg-white border border-border-custom rounded-lg p-3 shadow-sm flex flex-col space-y-1">
+            <h3 className="text-[10px] font-extrabold uppercase text-gray-400 px-3 py-2">Menu</h3>
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id as any)}
+                className={`flex items-center justify-between w-full px-3 py-2.5 rounded transition-colors text-sm font-bold ${
+                  activeTab === item.id 
+                    ? 'bg-primary text-white' 
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-secondary'
+                }`}
+              >
+                <div className="flex items-center space-x-2.5">
+                  <item.icon className="w-4 h-4" />
+                  <span>{item.label}</span>
                 </div>
-              ))}
-            </div>
+                {activeTab === item.id && <ChevronRight className="w-4 h-4 opacity-70" />}
+              </button>
+            ))}
           </div>
         </div>
-      )}
 
-      {/* TAB CONTENT: BLOGS */}
-      {activeTab === 'blogs' && (
-        <div className="bg-white border border-border-custom rounded-lg p-6 shadow-sm space-y-4">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-secondary border-b pb-2">Blog Management</h3>
-          <p className="text-xs text-gray-500">Publish study plans, answer sheet challenge schedules, or syllabus walkthroughs here.</p>
-          <div className="text-center py-8 text-gray-400 text-xs">
-            Blog CRUD actions and WYSIWYG editor loaded dynamically. Please edit / Create standard blogs through dynamic API routes.
+        {/* Content Area */}
+        <div className="flex-1 min-w-0 flex flex-col space-y-4">
+          <div>
+          {activeTab === 'analytics' && <AnalyticsTab stats={stats} setActiveTab={setActiveTab} />}
+          {activeTab === 'jobs' && (
+            <JobsTab 
+              jobs={jobs} 
+              isEditing={isEditingJob} 
+              onSaveJob={onSaveJob} 
+              handleEditSetup={handleEditJobSetup} 
+              handleDeleteJob={handleDeleteJob} 
+              resetEditState={resetJobEditState} 
+            />
+          )}
+          {activeTab === 'blogs' && (
+            <BlogsTab 
+              blogs={blogs} 
+              isEditingBlog={isEditingBlog} 
+              onSaveBlog={onSaveBlog} 
+              handleEditBlogSetup={handleEditBlogSetup} 
+              handleDeleteJob={handleDeleteBlog} 
+              resetEditState={resetBlogEditState} 
+            />
+          )}
+          {activeTab === 'exams' && <ExamsTab />}
+          {activeTab === 'master' && <MasterDataTab />}
+          {activeTab === 'settings' as any && (
+            <div className="bg-white border border-border-custom rounded-lg p-6 shadow-sm space-y-4">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-secondary border-b pb-2">Site Settings</h3>
+              <p className="text-xs text-gray-500">Configure global SEO, social links, and site information.</p>
+              <div className="text-center py-8 text-gray-400 text-xs">
+                Settings module is under development. Coming soon!
+              </div>
+            </div>
+          )}
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

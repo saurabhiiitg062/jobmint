@@ -4,6 +4,14 @@ import { api } from '@/lib/api/client';
 import { mockJobs } from '@/lib/mockData';
 import { Job } from '@/types';
 
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Latest Government Jobs 2026 - SelectionSure',
+  description: 'Find latest online application forms, notification alerts, job vacancies, and dates for UPSC, SSC, Railway, Banking, Army, Navy, and State PSC jobs.',
+};
+
+
 export const revalidate = 300;
 
 export default async function JobsPage() {

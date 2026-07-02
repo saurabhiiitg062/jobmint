@@ -1,4 +1,6 @@
 import React from 'react';
+
+export const revalidate = 86400;
 import { Mail, ShieldAlert } from 'lucide-react';
 
 export default function ContactPage() {

@@ -1,4 +1,21 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+function getApiBaseUrl() {
+  if (typeof window !== "undefined") {
+    return process.env.NEXT_PUBLIC_API_URL || "/api";
+  }
+
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.SITE_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+
+  const apiPath = process.env.NEXT_PUBLIC_API_URL || "/api";
+
+  if (apiPath.startsWith("http://") || apiPath.startsWith("https://")) {
+    return apiPath;
+  }
+
+  return `${siteUrl}${apiPath.startsWith("/") ? apiPath : `/${apiPath}`}`;
+}
 
 async function fetcher(endpoint: string, options: RequestInit = {}) {
   const headers = new Headers(options.headers || {});
@@ -14,7 +31,7 @@ async function fetcher(endpoint: string, options: RequestInit = {}) {
     headers.set('Content-Type', 'application/json');
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const response = await fetch(`${getApiBaseUrl()}${endpoint}`, {
     ...options,
     headers
   });
@@ -63,7 +80,7 @@ export const api = {
   },
 
   // Admin auth
-  login: (credentials: any) => {
+  login: (credentials: unknown) => {
     return fetcher('/admin/login', {
       method: 'POST',
       body: JSON.stringify(credentials)
@@ -75,14 +92,14 @@ export const api = {
   },
 
   // Admin Job Operations
-  createJob: (jobData: any) => {
+  createJob: (jobData: unknown) => {
     return fetcher('/jobs', {
       method: 'POST',
       body: JSON.stringify(jobData)
     });
   },
 
-  updateJob: (id: string, jobData: any) => {
+  updateJob: (id: string, jobData: unknown) => {
     return fetcher(`/jobs/${id}`, {
       method: 'PUT',
       body: JSON.stringify(jobData)
@@ -110,14 +127,14 @@ export const api = {
   },
 
   // Admin Blog Operations
-  createBlog: (blogData: any) => {
+  createBlog: (blogData: unknown) => {
     return fetcher('/blogs', {
       method: 'POST',
       body: JSON.stringify(blogData)
     });
   },
 
-  updateBlog: (id: string, blogData: any) => {
+  updateBlog: (id: string, blogData: unknown) => {
     return fetcher(`/blogs/${id}`, {
       method: 'PUT',
       body: JSON.stringify(blogData)
@@ -126,6 +143,73 @@ export const api = {
 
   deleteBlog: (id: string) => {
     return fetcher(`/blogs/${id}`, {
+      method: 'DELETE'
+    });
+  },
+
+  // Admin Master Data - Categories
+  getCategories: () => {
+    return fetcher('/categories');
+  },
+
+  createCategory: (data: unknown) => {
+    return fetcher('/categories', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  deleteCategory: (id: string) => {
+    return fetcher(`/categories/${id}`, {
+      method: 'DELETE'
+    });
+  },
+
+  // Admin Master Data - States
+  getStates: () => {
+    return fetcher('/states');
+  },
+
+  createState: (data: unknown) => {
+    return fetcher('/states', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  deleteState: (id: string) => {
+    return fetcher(`/states/${id}`, {
+      method: 'DELETE'
+    });
+  },
+
+  // Admin Exams
+  getExams: (params: { search?: string; limit?: number } = {}) => {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([key, val]) => {
+      if (val !== undefined && val !== null && val !== '') {
+        query.append(key, String(val));
+      }
+    });
+    return fetcher(`/exams?${query.toString()}`);
+  },
+
+  createExam: (data: unknown) => {
+    return fetcher('/exams', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  updateExam: (id: string, data: unknown) => {
+    return fetcher(`/exams/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  },
+
+  deleteExam: (id: string) => {
+    return fetcher(`/exams/${id}`, {
       method: 'DELETE'
     });
   }
