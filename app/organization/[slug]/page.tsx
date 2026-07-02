@@ -15,10 +15,7 @@ export async function generateStaticParams() {
     }));
   } catch (error) {
     console.warn('API error in generateStaticParams for organization:', error);
-    const orgs = Array.from(new Set(mockJobs.map(j => j.organization.toLowerCase())));
-    return orgs.map((org) => ({
-      slug: org,
-    }));
+    return [];
   }
 }
 

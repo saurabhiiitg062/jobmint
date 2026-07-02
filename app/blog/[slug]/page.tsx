@@ -21,9 +21,7 @@ export async function generateStaticParams() {
     }));
   } catch (error) {
     console.warn('API error in generateStaticParams for blogs:', error);
-    return mockBlogs.map((blog) => ({
-      slug: blog.slug,
-    }));
+    return [];
   }
 }
 
@@ -43,7 +41,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       console.warn("DB error in generateMetadata:", e);
     }
     
-    const blog = blogData || mockBlogs.find(b => b.slug === slug);
+    const blog = blogData;
     if (!blog) return {};
     
     return {

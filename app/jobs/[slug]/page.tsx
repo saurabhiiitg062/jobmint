@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       console.warn("DB error in generateMetadata:", e);
     }
     
-    const job = jobData || mockJobs.find(j => j.slug === slug);
+    const job = jobData;
     if (!job) return {};
     
     return {
