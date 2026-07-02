@@ -3,16 +3,24 @@ import Link from 'next/link';
 import { api } from '@/lib/api/client';
 import { Blog } from '@/types';
 
+import { connectToDatabase } from '@/lib/server/db';
+import { Blog as BlogModel } from '@/lib/server/models/Blog';
+
 export const revalidate = 300;
 
 export default async function BlogPage() {
   let blogs: Blog[] = [];
 
   try {
-    const res = await api.getBlogs({ limit: 50 });
-    blogs = res?.blogs || [];
+    await connectToDatabase();
+    // Remove strict status filter to support legacy DB documents without a status field
+    const fetchedBlogs = await BlogModel.find({})
+      .sort({ publishedAt: -1 })
+      .limit(50)
+      .lean();
+    blogs = JSON.parse(JSON.stringify(fetchedBlogs));
   } catch (error) {
-    console.warn('API error in blogs list, using mock fallbacks.');
+    console.warn('Database error in blogs list, using mock fallbacks.', error);
   }
 
   const displayBlogs = blogs;

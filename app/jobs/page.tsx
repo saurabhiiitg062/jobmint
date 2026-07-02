@@ -12,16 +12,24 @@ export const metadata: Metadata = {
 };
 
 
+import { connectToDatabase } from '@/lib/server/db';
+import { Job as JobModel } from '@/lib/server/models/Job';
+
 export const revalidate = 300;
 
 export default async function JobsPage() {
   let jobs: Job[] = [];
 
   try {
-    const res = await api.getJobs({ category: 'Latest Job', limit: 50 });
-    jobs = res?.jobs || [];
+    await connectToDatabase();
+    // Remove strict status filter to support legacy DB documents without a status field
+    const fetchedJobs = await JobModel.find({ category: 'Latest Job' })
+      .sort({ publishedAt: -1 })
+      .limit(50)
+      .lean();
+    jobs = JSON.parse(JSON.stringify(fetchedJobs));
   } catch (error) {
-    console.warn('API error in jobs list, using mock fallbacks.');
+    console.warn('Database error in jobs list, using mock fallbacks.', error);
   }
 
   const displayJobs = jobs;

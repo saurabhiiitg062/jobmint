@@ -24,13 +24,14 @@ export default async function HomePage() {
   try {
     await connectToDatabase();
     
-    const fetchedJobs = await JobModel.find({ status: 'published' })
+    // Remove strict status filter to support legacy DB documents without a status field
+    const fetchedJobs = await JobModel.find({})
       .sort({ publishedAt: -1 })
       .limit(100)
       .lean();
     dbJobs = JSON.parse(JSON.stringify(fetchedJobs));
     
-    const fetchedBlogs = await BlogModel.find()
+    const fetchedBlogs = await BlogModel.find({})
       .sort({ publishedAt: -1 })
       .limit(6)
       .lean();
