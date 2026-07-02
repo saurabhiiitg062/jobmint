@@ -8,7 +8,7 @@ import { connectToDatabase } from '@/lib/server/db';
 import { Blog as BlogModel } from '@/lib/server/models/Blog';
 import { Blog } from '@/types';
 import StructuredData from '@/components/seo/StructuredData';
-import BlogViewTracker from '@/components/seo/BlogViewTracker';
+
 
 export const revalidate = 300;
 export const dynamicParams = true;
@@ -116,7 +116,7 @@ export default async function BlogSlugPage({ params }: PageProps) {
   return (
     <article className="max-w-3xl mx-auto bg-white border border-border-custom rounded-lg p-5 md:p-8 shadow-sm space-y-6">
       <StructuredData data={articleSchema} />
-      <BlogViewTracker slug={blog.slug} />
+
 
       <Link href="/blog" className="inline-flex items-center space-x-1.5 text-xs text-gray-500 hover:text-primary font-bold">
         <ArrowLeft className="w-4 h-4" />

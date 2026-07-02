@@ -95,6 +95,7 @@ export interface Job {
   exam?: Exam;
   cutoff?: DynamicTable[];
   syllabus?: DynamicTable[] | string;
+  rawData?: any;
 }
 
 export interface Blog {

@@ -139,7 +139,7 @@ export default function Navbar({ todayJobsCount = 0 }: { todayJobsCount?: number
       </div>
 
       {/* Navigation */}
-      <nav className="bg-secondary text-white sticky top-0 z-50 shadow-md">
+      <nav className="bg-secondary text-white z-50 shadow-md">
         <div className="max-w-7xl mx-auto px-4">
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center h-12 overflow-x-auto scrollbar-none">

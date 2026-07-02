@@ -105,7 +105,7 @@ function shareJob(title: string, slug: string, categorySlug: JobDetailViewProps[
 export default function JobDetailView({ job, categorySlug }: JobDetailViewProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('overview');
-  const [viewCount, setViewCount] = useState(job.views || 0);
+
   const [tabTransition, setTabTransition] = useState<'idle' | 'leaving' | 'entering'>('idle');
   const [transitionDirection, setTransitionDirection] = useState<-1 | 1>(1);
   const [swipeOffset, setSwipeOffset] = useState(0);
@@ -301,6 +301,12 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
         icon: Link2,
       }
       : null,
+    ...(job.rawData?.customLinks?.map((cl: any) => ({
+      href: cl.url,
+      label: cl.label,
+      action: 'Click Here',
+      icon: ExternalLink
+    })) || []),
     job.importantLinks?.officialWebsite
       ? {
         href: job.importantLinks.officialWebsite,
@@ -311,15 +317,34 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
       : null,
   ].filter((item): item is LinkItem => Boolean(item));
 
+  const otherTables = (job.tables || []).filter(table => {
+    const title = table.title.toLowerCase();
+    return !title.includes('syllabus') && !title.includes('pattern') && !title.includes('vacancy') && !title.includes('cutoff');
+  });
+
+  const dynamicTabs = otherTables.map((table, index) => ({
+    id: `table-other-${index}`,
+    label: table.title,
+    table: table
+  }));
+
+  const customSectionTabs = (job.rawData?.customSections || []).map((section: any, index: number) => ({
+    id: `custom-section-${index}`,
+    label: section.title,
+    content: section.content
+  }));
+
   const tabItems = [
     { id: 'overview', label: 'Overview' },
+    ...(job.rawData?.description ? [{ id: 'job-details', label: 'Job Details' }] : []),
+    ...customSectionTabs.map((t: any) => ({ id: t.id, label: t.label })),
     { id: 'important-dates', label: 'Important Dates' },
     { id: 'eligibility', label: 'Eligibility' },
     { id: 'application-fee', label: 'Application Fee' },
-    { id: 'selection-process', label: 'Selection Process' },
     { id: 'syllabus', label: 'Syllabus' },
     { id: 'vacancy-details', label: 'Vacancy Details' },
     { id: 'cutoff', label: 'Cutoff' },
+    ...dynamicTabs.map((t: any) => ({ id: t.id, label: t.label }))
   ];
 
   const tabOrder = tabItems.map((tab) => tab.id);
@@ -402,21 +427,7 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
       if (tab) setActiveTab(tab);
     }
 
-    let isMounted = true;
-
-    // Increment view count
-    fetch(`/api/jobs/slug/${job.slug}/view`, { method: 'POST' })
-      .then((res) => {
-        if (res.ok && isMounted) {
-          setViewCount((prev) => prev + 1);
-        }
-      })
-      .catch(() => { });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [job.slug]);
+  }, []);
 
   useEffect(() => {
     tabButtonRefs.current[activeTab]?.scrollIntoView({
@@ -551,10 +562,7 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
                         <span className="rounded-md bg-green-50 px-2.5 py-1 text-[11px] font-semibold leading-none text-success">
                           Official Notification
                         </span>
-                        <span className="ml-2 flex items-center gap-1.5 text-xs font-semibold text-gray-500">
-                          <Eye className="h-4 w-4" />
-                          {viewCount} Views
-                        </span>
+
                       </div>
                     </div>
                   </div>
@@ -600,9 +608,7 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
             </div>
 
             <div className="rounded-lg border border-border-custom bg-white px-4 py-4 shadow-sm md:px-6">
-              <nav
-                className="overflow-x-auto border-b border-border-custom"
-              >
+              <nav className="overflow-x-auto border-b border-border-custom [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <div className="flex min-w-max gap-4 whitespace-nowrap text-xs font-bold text-gray-600 sm:gap-6 sm:text-sm">
                   {tabItems.map((tab) => (
                     <button
@@ -701,6 +707,26 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
                   </div>
                 </section>
 
+                {job.rawData?.description && (
+                  <section id="job-details" className={activeTab === 'job-details' ? 'block' : 'hidden print:block'}>
+                    <h3 className="text-lg font-bold text-secondary mb-4">Job Details & Instructions</h3>
+                    <div 
+                      className="prose max-w-none text-sm text-gray-700 bg-white rounded-lg border border-border-custom p-4 md:p-6"
+                      dangerouslySetInnerHTML={{ __html: job.rawData.description }} 
+                    />
+                  </section>
+                )}
+
+                {customSectionTabs.map((t: any) => (
+                  <section key={t.id} id={t.id} className={activeTab === t.id ? 'block' : 'hidden print:block'}>
+                    <h3 className="text-lg font-bold text-secondary mb-4">{t.label}</h3>
+                    <div 
+                      className="prose max-w-none text-sm text-gray-700 bg-white rounded-lg border border-border-custom p-4 md:p-6"
+                      dangerouslySetInnerHTML={{ __html: t.content }} 
+                    />
+                  </section>
+                ))}
+
                 <section id="important-dates" className={activeTab === 'important-dates' ? 'block' : 'hidden print:block'}>
                   <h3 className="text-lg font-bold text-secondary">Important Dates</h3>
                   <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -752,13 +778,6 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
                     <p className="mt-3 text-sm font-semibold text-gray-700">
                       {job.exam?.applicationFee || job.applicationFee || job.fee || 'Please refer to the official notification for category-wise fee details.'}
                     </p>
-                  </div>
-                </section>
-
-                <section id="selection-process" className={activeTab === 'selection-process' ? 'block' : 'hidden'}>
-                  <h3 className="text-lg font-bold text-secondary">Selection Process</h3>
-                  <div className="mt-4 rounded-lg border border-border-custom bg-white p-4 text-sm font-semibold text-gray-700">
-                    {job.selectionProcess || 'Written examination, document verification, and other stages as mentioned in the official notice.'}
                   </div>
                 </section>
 
@@ -838,6 +857,15 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
                     </div>
                   ) : null}
                 </section>
+
+                {dynamicTabs.map((t: any) => (
+                  <section key={t.id} id={t.id} className={activeTab === t.id ? 'block' : 'hidden print:block'}>
+                    <h3 className="text-lg font-bold text-secondary">{t.label}</h3>
+                    <div className="mt-4 space-y-4">
+                      <DynamicTable table={t.table} />
+                    </div>
+                  </section>
+                ))}
               </div>
 
               {job.tags && job.tags.length > 0 && (

@@ -39,8 +39,10 @@ interface Props {
 
 export default function JobPostForm({ initialData, onSubmit, isEditing = false, onCancel }: Props) {
   const [description, setDescription] = useState(initialData?.rawData?.description || initialData?.description || '');
+  const [customSections, setCustomSections] = useState<{title: string, content: string}[]>(initialData?.rawData?.customSections || []);
   const [tables, setTables] = useState<DynamicTableType[]>(initialData?.tables || []);
   const [customDates, setCustomDates] = useState<{label: string, date: string}[]>(initialData?.rawData?.customDates || []);
+  const [customLinks, setCustomLinks] = useState<{label: string, url: string}[]>(initialData?.rawData?.customLinks || []);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [examsList, setExamsList] = useState<any[]>([]);
 
@@ -64,10 +66,48 @@ export default function JobPostForm({ initialData, onSubmit, isEditing = false, 
     };
   }, [initialData]);
 
-  const { register, handleSubmit, formState: { errors }, reset } = useForm({
+  const { register, handleSubmit, formState: { errors }, reset, getValues } = useForm({
     resolver: zodResolver(jobFormSchema),
     defaultValues: flattenedInitialData
   });
+
+  // Load Draft
+  React.useEffect(() => {
+    if (isEditing) return;
+    const savedDraft = localStorage.getItem('jobmint_job_draft');
+    if (savedDraft) {
+      try {
+        const parsed = JSON.parse(savedDraft);
+        if (parsed.formData && Object.keys(parsed.formData).length > 0) {
+          reset(parsed.formData);
+        }
+        if (parsed.description) setDescription(parsed.description);
+        if (parsed.customSections) setCustomSections(parsed.customSections);
+        if (parsed.tables) setTables(parsed.tables);
+        if (parsed.customDates) setCustomDates(parsed.customDates);
+        if (parsed.customLinks) setCustomLinks(parsed.customLinks);
+      } catch (e) {
+        console.error('Failed to parse draft', e);
+      }
+    }
+  }, [isEditing, reset]);
+
+  // Save Draft Periodically
+  React.useEffect(() => {
+    if (isEditing) return;
+    const interval = setInterval(() => {
+      const draft = {
+        formData: getValues(),
+        description,
+        customSections,
+        tables,
+        customDates,
+        customLinks
+      };
+      localStorage.setItem('jobmint_job_draft', JSON.stringify(draft));
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [isEditing, description, customSections, tables, customDates, customLinks, getValues]);
 
   const handleFormSubmit = async (formData: any) => {
     setIsSubmitting(true);
@@ -77,7 +117,9 @@ export default function JobPostForm({ initialData, onSubmit, isEditing = false, 
         tables,
         rawData: {
           description,
-          customDates
+          customSections,
+          customDates,
+          customLinks
         },
         importantDates: {
           applyStart: formData.applyStart || 'Available Now',
@@ -97,9 +139,13 @@ export default function JobPostForm({ initialData, onSubmit, isEditing = false, 
       await onSubmit(preparedData);
       
       if (!isEditing) {
+        localStorage.removeItem('jobmint_job_draft');
         reset();
         setDescription('');
+        setCustomSections([]);
         setTables([]);
+        setCustomDates([]);
+        setCustomLinks([]);
       }
     } catch (error) {
       console.error('Error submitting job:', error);
@@ -110,10 +156,24 @@ export default function JobPostForm({ initialData, onSubmit, isEditing = false, 
 
   return (
     <div className="bg-white border border-border-custom rounded-lg shadow-sm">
-      <div className="border-b border-border-custom px-6 py-4">
+      <div className="border-b border-border-custom px-6 py-4 flex items-center justify-between">
         <h2 className="text-lg font-bold text-secondary">
           {isEditing ? 'Edit Job Notification' : 'Post New Job Notification'}
         </h2>
+        {!isEditing && (
+          <button 
+            type="button" 
+            onClick={() => {
+              if (window.confirm('Are you sure you want to clear your saved draft? This cannot be undone.')) {
+                localStorage.removeItem('jobmint_job_draft');
+                window.location.reload();
+              }
+            }}
+            className="text-xs font-semibold text-red-500 hover:text-red-700 bg-red-50 px-2 py-1 rounded"
+          >
+            Clear Draft
+          </button>
+        )}
       </div>
 
       <form onSubmit={handleSubmit(handleFormSubmit)} className="p-6 space-y-6">
@@ -221,15 +281,6 @@ export default function JobPostForm({ initialData, onSubmit, isEditing = false, 
                 {...register('applicationFee')}
                 className="w-full p-2.5 border border-border-custom rounded text-sm focus:outline-none focus:ring-1 focus:ring-secondary"
                 placeholder="₹100 for General/OBC"
-              />
-            </div>
-
-            <div className="space-y-1 md:col-span-2">
-              <label className="text-xs font-bold text-gray-500">Selection Process</label>
-              <textarea
-                {...register('selectionProcess')}
-                className="w-full p-2.5 border border-border-custom rounded text-sm focus:outline-none focus:ring-1 focus:ring-secondary h-20"
-                placeholder="Written Exam, Document Verification, etc."
               />
             </div>
           </div>
@@ -386,17 +437,130 @@ export default function JobPostForm({ initialData, onSubmit, isEditing = false, 
               />
             </div>
           </div>
+
+          <div className="mt-4 border border-gray-100 rounded-lg p-4 bg-gray-50">
+            <div className="flex justify-between items-center mb-3">
+              <label className="text-xs font-bold text-gray-600 uppercase">Custom Links</label>
+              <button 
+                type="button" 
+                onClick={() => setCustomLinks([...customLinks, { label: '', url: '' }])}
+                className="text-xs bg-white border border-gray-200 px-2 py-1 rounded text-primary hover:bg-gray-100 font-bold"
+              >
+                + Add Link
+              </button>
+            </div>
+            
+            <div className="space-y-2">
+              {customLinks.map((cl, index) => (
+                <div key={index} className="flex space-x-2 items-center">
+                  <input
+                    type="text"
+                    value={cl.label}
+                    onChange={(e) => {
+                      const newLinks = [...customLinks];
+                      newLinks[index].label = e.target.value;
+                      setCustomLinks(newLinks);
+                    }}
+                    placeholder="e.g. Download Syllabus"
+                    className="flex-1 p-2 border border-border-custom rounded text-sm focus:outline-none focus:ring-1 focus:ring-secondary"
+                  />
+                  <input
+                    type="url"
+                    value={cl.url}
+                    onChange={(e) => {
+                      const newLinks = [...customLinks];
+                      newLinks[index].url = e.target.value;
+                      setCustomLinks(newLinks);
+                    }}
+                    placeholder="https://..."
+                    className="flex-1 p-2 border border-border-custom rounded text-sm focus:outline-none focus:ring-1 focus:ring-secondary"
+                  />
+                  <button 
+                    type="button" 
+                    onClick={() => setCustomLinks(customLinks.filter((_, i) => i !== index))}
+                    className="p-2 text-red-500 hover:bg-red-50 rounded"
+                  >
+                    🗑
+                  </button>
+                </div>
+              ))}
+              {customLinks.length === 0 && (
+                <p className="text-xs text-gray-400 italic">No custom links added. Click + Add Link if needed.</p>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Job Description */}
         <div className="space-y-4">
           <h3 className="text-sm font-bold uppercase tracking-wider text-secondary border-b pb-2">
-            Job Description
+            Job Details / Overview
           </h3>
           <TiptapEditor
             value={description}
             onChange={setDescription}
           />
+        </div>
+
+        {/* Custom Rich Text Sections */}
+        <div className="space-y-4">
+          <div className="flex justify-between items-center border-b pb-2">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-secondary">
+              Custom Sections (Rich Text)
+            </h3>
+            <button 
+              type="button" 
+              onClick={() => setCustomSections([...customSections, { title: '', content: '' }])}
+              className="text-xs bg-white border border-gray-200 px-3 py-1 rounded text-primary hover:bg-gray-100 font-bold shadow-sm"
+            >
+              + Add Section
+            </button>
+          </div>
+          
+          <div className="space-y-6">
+            {customSections.map((section, index) => (
+              <div key={index} className="border border-gray-200 rounded-lg p-4 bg-gray-50 relative">
+                <button 
+                  type="button" 
+                  onClick={() => setCustomSections(customSections.filter((_, i) => i !== index))}
+                  className="absolute top-2 right-2 text-red-500 hover:bg-red-50 p-1.5 rounded"
+                  title="Remove Section"
+                >
+                  🗑
+                </button>
+                <div className="space-y-3 pr-8">
+                  <div>
+                    <label className="text-xs font-bold text-gray-500">Section Title (e.g. Selection Process, How to Apply)</label>
+                    <input
+                      type="text"
+                      value={section.title}
+                      onChange={(e) => {
+                        const newSections = [...customSections];
+                        newSections[index].title = e.target.value;
+                        setCustomSections(newSections);
+                      }}
+                      className="w-full p-2 mt-1 border border-border-custom rounded text-sm focus:outline-none focus:ring-1 focus:ring-secondary"
+                      placeholder="Enter tab title"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-500 mb-1 block">Content</label>
+                    <TiptapEditor
+                      value={section.content}
+                      onChange={(val) => {
+                        const newSections = [...customSections];
+                        newSections[index].content = val;
+                        setCustomSections(newSections);
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+            {customSections.length === 0 && (
+              <p className="text-sm text-gray-500 italic text-center py-4">No custom sections added. Click "+ Add Section" to add more tabs like How to Apply, Syllabus, etc.</p>
+            )}
+          </div>
         </div>
 
         {/* Dynamic Tables */}

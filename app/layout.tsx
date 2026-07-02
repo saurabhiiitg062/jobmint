@@ -91,7 +91,7 @@ export default async function RootLayout({
       </head>
       <body className={`${notoSans.variable} antialiased min-h-screen flex flex-col pb-14 md:pb-0`}>
         <ReduxProvider>
-          <div className="sticky top-0 z-50 print:hidden">
+          <div className="relative z-50 print:hidden">
             <Navbar todayJobsCount={todayJobsCount} />
             <BreakingNews />
             <div className="max-w-7xl w-full mx-auto px-4">

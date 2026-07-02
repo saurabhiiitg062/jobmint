@@ -195,6 +195,24 @@ export default function TiptapEditor({
 
       </div>
 
+      {editor.isActive('table') && (
+        <div className="flex flex-wrap gap-2 p-1.5 bg-indigo-50 border-b border-border-custom items-center text-xs">
+          <span className="font-semibold text-indigo-700 px-2">Table Options:</span>
+          <button type="button" onClick={() => editor.chain().focus().addColumnBefore().run()} className="px-2 py-1 bg-white border rounded hover:bg-gray-100">+ Col Left</button>
+          <button type="button" onClick={() => editor.chain().focus().addColumnAfter().run()} className="px-2 py-1 bg-white border rounded hover:bg-gray-100">+ Col Right</button>
+          <button type="button" onClick={() => editor.chain().focus().deleteColumn().run()} className="px-2 py-1 bg-red-50 text-red-600 border border-red-200 rounded hover:bg-red-100">- Delete Col</button>
+          <div className="w-px h-4 bg-gray-300 mx-1"></div>
+          <button type="button" onClick={() => editor.chain().focus().addRowBefore().run()} className="px-2 py-1 bg-white border rounded hover:bg-gray-100">+ Row Above</button>
+          <button type="button" onClick={() => editor.chain().focus().addRowAfter().run()} className="px-2 py-1 bg-white border rounded hover:bg-gray-100">+ Row Below</button>
+          <button type="button" onClick={() => editor.chain().focus().deleteRow().run()} className="px-2 py-1 bg-red-50 text-red-600 border border-red-200 rounded hover:bg-red-100">- Delete Row</button>
+          <div className="w-px h-4 bg-gray-300 mx-1"></div>
+          <button type="button" onClick={() => editor.chain().focus().mergeCells().run()} className="px-2 py-1 bg-white border rounded hover:bg-gray-100">Merge Cells</button>
+          <button type="button" onClick={() => editor.chain().focus().splitCell().run()} className="px-2 py-1 bg-white border rounded hover:bg-gray-100">Split Cell</button>
+          <div className="w-px h-4 bg-gray-300 mx-1"></div>
+          <button type="button" onClick={() => editor.chain().focus().deleteTable().run()} className="px-2 py-1 bg-red-600 text-white border rounded hover:bg-red-700 font-bold">Delete Table</button>
+        </div>
+      )}
+
       <div className="flex-1 bg-white overflow-y-auto max-h-[600px]">
         <EditorContent editor={editor} />
       </div>

@@ -391,18 +391,24 @@ export default function DynamicTableBuilder({ tables, onChange }: Props) {
                     {table.columns.map((_, colIndex) => (
                       <td key={colIndex} className="border border-border-custom px-2 py-1">
                         {editingCell?.tableIndex === tableIndex && editingCell?.rowIndex === rowIndex && editingCell?.colIndex === colIndex ? (
-                          <input
-                            type="text"
+                          <textarea
                             value={row[colIndex] || ''}
                             onChange={(e) => updateCellValue(tableIndex, rowIndex, colIndex, e.target.value)}
                             onBlur={() => setEditingCell(null)}
-                            onKeyDown={(e) => e.key === 'Enter' && setEditingCell(null)}
-                            className="w-full px-1 py-0.5 border rounded text-xs"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && !e.shiftKey) {
+                                // Default Enter adds a newline in textarea, so no action needed. 
+                                // But if we want to save on Enter (without shift), we can keep the old behavior.
+                                // Let's just let Enter be a newline and they click out to save.
+                                e.stopPropagation();
+                              }
+                            }}
+                            className="w-full px-1 py-1 border rounded text-xs min-h-[60px] resize-y"
                             autoFocus
                           />
                         ) : (
                           <div
-                            className="text-xs cursor-pointer hover:bg-gray-100 p-1 rounded min-h-[24px] flex items-center"
+                            className="text-xs cursor-pointer hover:bg-gray-100 p-1 rounded min-h-[24px] whitespace-pre-wrap"
                             onClick={() => setEditingCell({ tableIndex, rowIndex, colIndex })}
                           >
                             {row[colIndex] || <span className="text-gray-300 italic">Empty</span>}

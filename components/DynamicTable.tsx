@@ -38,6 +38,7 @@ export default function DynamicTable({ table }: Props) {
                 {table.columns.map((_, colIndex) => (
                   <td
                     key={colIndex}
+                    className="whitespace-pre-wrap"
                     dangerouslySetInnerHTML={{
                       __html: row[colIndex] !== undefined && row[colIndex] !== null ? String(row[colIndex]) : ''
                     }}
