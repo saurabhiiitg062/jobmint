@@ -1,3 +1,4 @@
+import { api } from '@/lib/api/client';
 import type { Metadata } from 'next';
 import React from 'react';
 import { notFound } from 'next/navigation';

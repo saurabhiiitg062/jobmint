@@ -30,6 +30,7 @@ export interface Exam {
     examDate?: string;
     admitCardRelease?: string;
     resultDeclaration?: string;
+    extendedDate?: string;
   };
   eligibility?: {
     qualification?: string;
@@ -62,6 +63,7 @@ export interface Job {
     examDate?: string;
     admitCardRelease?: string;
     resultDeclaration?: string;
+    extendedDate?: string;
   };
   importantLinks?: {
     applyOnline?: string;
