@@ -1,25 +1,16 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 
-export default function BreakingNews() {
+interface BreakingNewsProps {
+  latestJobs?: any[];
+}
+
+export default function BreakingNews({ latestJobs = [] }: BreakingNewsProps) {
   const Marquee = 'marquee' as any;
-  const [jobs, setJobs] = useState<any[]>([]);
 
-  useEffect(() => {
-    // Fetch latest 5 jobs for breaking news
-    fetch('/api/jobs?limit=5')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data && data.jobs) {
-          setJobs(data.jobs);
-        }
-      })
-      .catch((err) => console.error('Error fetching breaking news:', err));
-  }, []);
-
-  if (jobs.length === 0) return null;
+  if (!latestJobs || latestJobs.length === 0) return null;
 
   return (
     <div className="bg-yellow-300 text-black border-y border-yellow-400 py-1.5 px-4 flex items-center text-xs sm:text-sm font-bold overflow-hidden">
@@ -31,7 +22,7 @@ export default function BreakingNews() {
         scrollamount={5}
         className="cursor-pointer flex-1"
       >
-        {jobs.map((job) => {
+        {latestJobs.map((job) => {
           let href = '/jobs';
           if (job.category === 'Result' || job.category === 'Results') href = '/results';
           else if (job.category === 'Admit Card') href = '/admit-cards';

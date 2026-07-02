@@ -56,15 +56,35 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Fetch today's job count
+  // Fetch today's job count and latest jobs for breaking news
   let todayJobsCount = 0;
+  let latestJobs: any[] = [];
   try {
     await connectToDatabase();
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
     todayJobsCount = await JobModel.countDocuments({ createdAt: { $gte: startOfToday } });
+    
+    // Get latest 5 jobs for breaking news
+    const jobs = await JobModel.find({ status: 'published' })
+      .sort({ publishedAt: -1 })
+      .limit(5)
+      .select('title slug category _id')
+      .lean();
+    
+    // If no published jobs, fallback to any 5 recent jobs
+    if (jobs.length === 0) {
+      const anyJobs = await JobModel.find()
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .select('title slug category _id')
+        .lean();
+      latestJobs = JSON.parse(JSON.stringify(anyJobs));
+    } else {
+      latestJobs = JSON.parse(JSON.stringify(jobs));
+    }
   } catch (error) {
-    console.error('Failed to fetch today jobs count:', error);
+    console.error('Failed to fetch initial data:', error);
   }
 
   const gaId = process.env.NEXT_PUBLIC_GA_ID || 'G-8YSMYPTPJ3';
@@ -93,7 +113,7 @@ export default async function RootLayout({
         <ReduxProvider>
           <div className="relative z-50 print:hidden">
             <Navbar todayJobsCount={todayJobsCount} />
-            <BreakingNews />
+            <BreakingNews latestJobs={latestJobs} />
             <div className="max-w-7xl w-full mx-auto px-4">
               <Breadcrumbs />
             </div>
