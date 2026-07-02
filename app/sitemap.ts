@@ -4,6 +4,8 @@ import { Job as JobModel } from '@/lib/server/models/Job';
 import { Blog as BlogModel } from '@/lib/server/models/Blog';
 import { Job, Blog } from '@/types';
 
+export const revalidate = 300; // Cache for 5 minutes
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://selectionsure.app';
   let jobsList: Job[] = [];
