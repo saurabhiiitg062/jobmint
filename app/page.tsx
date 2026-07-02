@@ -6,7 +6,7 @@ import PinnedJobsWidget from '@/components/widgets/PinnedJobsWidget';
 import HomeJobList from '@/components/widgets/HomeJobList';
 
 import { api } from '@/lib/api/client';
-import { mockJobs, mockBlogs } from '@/lib/mockData';
+
 import { Job, Blog } from '@/types';
 import StructuredData from '@/components/seo/StructuredData';
 

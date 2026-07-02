@@ -1,7 +1,6 @@
 import React from 'react';
 import JobListView from '@/components/cards/JobListView';
 import { api } from '@/lib/api/client';
-import { mockJobs } from '@/lib/mockData';
 import { Job } from '@/types';
 
 export const revalidate = 300;
@@ -21,7 +20,7 @@ export default async function StatePage({ params }: PageProps) {
     console.warn('API error fetching state jobs, using fallback mock data.');
   }
 
-  const allJobs = jobs.length > 0 ? jobs : mockJobs;
+  const allJobs = jobs;
   const filteredJobs = allJobs.filter(j => j.state?.toLowerCase() === slug.toLowerCase());
 
   const stateName = slug.charAt(0).toUpperCase() + slug.slice(1);

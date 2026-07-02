@@ -1,7 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/api/client';
-import { mockBlogs } from '@/lib/mockData';
 import { Blog } from '@/types';
 
 export const revalidate = 300;
@@ -16,7 +15,7 @@ export default async function BlogPage() {
     console.warn('API error in blogs list, using mock fallbacks.');
   }
 
-  const displayBlogs = blogs.length > 0 ? blogs : mockBlogs;
+  const displayBlogs = blogs;
 
   return (
     <div className="space-y-8">

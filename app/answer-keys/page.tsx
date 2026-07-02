@@ -1,7 +1,7 @@
 import React from 'react';
 import JobListView from '@/components/cards/JobListView';
 import { api } from '@/lib/api/client';
-import { mockJobs } from '@/lib/mockData';
+
 import { Job } from '@/types';
 
 import { Metadata } from 'next';
@@ -24,7 +24,7 @@ export default async function AnswerKeysPage() {
     console.warn('API error in answer keys list, using mock fallbacks.');
   }
 
-  const displayJobs = jobs.length > 0 ? jobs : mockJobs.filter(j => j.category === 'Answer Key');
+  const displayJobs = jobs;
 
   return (
     <JobListView

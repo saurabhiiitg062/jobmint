@@ -1,7 +1,6 @@
 import React from 'react';
 import JobListView from '@/components/cards/JobListView';
 import { api } from '@/lib/api/client';
-import { mockJobs } from '@/lib/mockData';
 import { Job } from '@/types';
 
 interface SearchPageProps {
@@ -19,7 +18,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     console.warn('API error searching jobs, using fallback filtering.');
   }
 
-  const allJobs = jobs.length > 0 ? jobs : mockJobs;
+  const allJobs = jobs;
   const filteredJobs = q 
     ? allJobs.filter(j => 
         j.title.toLowerCase().includes(q.toLowerCase()) ||

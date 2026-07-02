@@ -1,7 +1,6 @@
 import React from 'react';
 import JobListView from '@/components/cards/JobListView';
 import { api } from '@/lib/api/client';
-import { mockJobs } from '@/lib/mockData';
 import { Job } from '@/types';
 
 export const revalidate = 300;
@@ -38,7 +37,7 @@ export default async function OrganizationPage({ params }: PageProps) {
     console.warn('API error fetching organization jobs, using mock fallbacks.');
   }
 
-  const allJobs = jobs.length > 0 ? jobs : mockJobs;
+  const allJobs = jobs;
   const filteredJobs = allJobs.filter(j => j.organization.toLowerCase() === slug.toLowerCase());
 
   const orgName = slug.toUpperCase();

@@ -6,7 +6,6 @@ import { Calendar, Eye, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { connectToDatabase } from '@/lib/server/db';
 import { Blog as BlogModel } from '@/lib/server/models/Blog';
-import { mockBlogs } from '@/lib/mockData';
 import { Blog } from '@/types';
 import StructuredData from '@/components/seo/StructuredData';
 import BlogViewTracker from '@/components/seo/BlogViewTracker';
@@ -86,7 +85,7 @@ export default async function BlogSlugPage({ params }: PageProps) {
   }
 
   if (!blog) {
-    blog = mockBlogs.find(b => b.slug === slug) as unknown as Blog || null;
+    
   }
 
   if (!blog) {

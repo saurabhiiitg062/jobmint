@@ -5,7 +5,6 @@ import { notFound } from 'next/navigation';
 import JobDetailView from '@/components/cards/JobDetailView';
 import { connectToDatabase } from '@/lib/server/db';
 import { Job as JobModel } from '@/lib/server/models/Job';
-import { mockJobs } from '@/lib/mockData';
 import { Job } from '@/types';
 
 export const revalidate = 300;
@@ -19,9 +18,7 @@ export async function generateStaticParams() {
     }));
   } catch (error) {
     console.warn('API error in generateStaticParams for jobs:', error);
-    return mockJobs.filter(j => j.category === 'Latest Job').map((job) => ({
-      slug: job.slug,
-    }));
+    return [];
   }
 }
 
@@ -83,7 +80,7 @@ export default async function JobSlugPage({ params }: PageProps) {
   }
 
   if (!job) {
-    job = mockJobs.find(j => j.slug === slug) as unknown as Job || null;
+    
   }
 
   if (!job) {

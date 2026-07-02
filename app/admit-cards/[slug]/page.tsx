@@ -3,7 +3,6 @@ import React from 'react';
 import { notFound } from 'next/navigation';
 import JobDetailView from '@/components/cards/JobDetailView';
 import { api } from '@/lib/api/client';
-import { mockJobs } from '@/lib/mockData';
 import { Job } from '@/types';
 
 export const revalidate = 300;
@@ -17,9 +16,7 @@ export async function generateStaticParams() {
     }));
   } catch (error) {
     console.warn('API error in generateStaticParams for admit cards:', error);
-    return mockJobs.filter(j => j.category === 'Admit Card').map((job) => ({
-      slug: job.slug,
-    }));
+    return [];
   }
 }
 
@@ -30,7 +27,7 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   try {
-    const job = await api.getJobBySlug(slug).catch(() => null) || mockJobs.find(j => j.slug === slug);
+    const job = await api.getJobBySlug(slug).catch(() => null);
     if (!job) return {};
     
     return {
@@ -54,7 +51,7 @@ export default async function AdmitCardSlugPage({ params }: PageProps) {
   }
 
   if (!job) {
-    job = mockJobs.find(j => j.slug === slug) || null;
+    
   }
 
   if (!job) {

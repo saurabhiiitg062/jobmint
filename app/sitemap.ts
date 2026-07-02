@@ -1,6 +1,6 @@
 import { MetadataRoute } from 'next';
 import { api } from '@/lib/api/client';
-import { mockJobs, mockBlogs } from '@/lib/mockData';
+
 
 import { Job, Blog } from '@/types';
 
@@ -15,8 +15,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const blogsRes = await api.getBlogs({ limit: 50 });
     blogsList = blogsRes?.blogs || [];
   } catch (e) {
-    jobsList = mockJobs;
-    blogsList = mockBlogs;
+    
+    
   }
 
   // Core Pages

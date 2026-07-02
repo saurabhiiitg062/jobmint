@@ -1,7 +1,6 @@
 import React from 'react';
 import JobListView from '@/components/cards/JobListView';
 import { api } from '@/lib/api/client';
-import { mockJobs } from '@/lib/mockData';
 import { Job } from '@/types';
 
 export const revalidate = 300;
@@ -32,7 +31,7 @@ export default async function CategoryPage({ params }: PageProps) {
     console.warn('API error fetching category, using fallback mock data.');
   }
 
-  const allJobs = jobs.length > 0 ? jobs : mockJobs;
+  const allJobs = jobs;
   const filteredJobs = allJobs.filter(j => 
     j.organization.toLowerCase() === categoryQuery.toLowerCase() ||
     j.category.toLowerCase().includes(categoryQuery.toLowerCase()) ||
