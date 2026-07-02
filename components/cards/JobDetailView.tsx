@@ -461,7 +461,7 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
         <div className="flex items-center justify-between border-b-2 border-black pb-3 mb-4">
           {/* <div>
                <h1 className="text-xl font-black uppercase text-black">selectionsure.app</h1>
-               <p className="text-xs font-bold mt-0.5 text-gray-700">Fastest Updates for Govt Jobs</p>
+               <p className="text-xs font-bold mt-0.5 text-gray-700">Fastest Updates for Govt Jobss</p>
             </div> */}
           <div className="flex items-center gap-3 text-right justify-end max-w-[50%]">
             <div>
@@ -806,7 +806,7 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
 
                 <section id="cutoff" className={activeTab === 'cutoff' ? 'block' : 'hidden print:hidden'}>
                   <h3 className="text-lg font-bold text-secondary">Cutoff Marks</h3>
-                  
+
                   {job.exam?.historicalCutoffs && job.exam.historicalCutoffs.length > 0 && (
                     <div className="mt-4 mb-8 space-y-4">
                       <div className="bg-blue-50 border border-blue-200 text-blue-800 text-sm p-3 rounded-lg mb-4 font-semibold">
