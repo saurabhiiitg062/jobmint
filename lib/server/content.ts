@@ -60,6 +60,10 @@ export function filterValidTables<T extends TableLike>(tables: T[]): T[] {
 }
 
 export function revalidateContentPaths(type: string, slug?: string) {
+  // Always revalidate root layout and homepage so that Navbar (jobs count), Breaking News, and Home feeds update immediately
+  revalidatePath('/', 'layout');
+  revalidatePath('/', 'page');
+
   if (type === "job" && slug) {
     const paths = [
       `/jobs/${slug}`,
