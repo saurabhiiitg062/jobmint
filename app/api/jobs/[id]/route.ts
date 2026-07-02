@@ -58,10 +58,8 @@ export async function PUT(
     if (jobData.cutoff) jobData.cutoff = filterValidTables(jobData.cutoff);
     if (jobData.syllabus) jobData.syllabus = filterValidTables(jobData.syllabus);
 
-    if (jobData.title && !jobData.slug) {
-      jobData.slug = generateSlug(jobData.title);
-    }
-
+    // We strictly DO NOT update the slug during PUT requests to prevent breaking SEO URLs.
+    // The slug should remain permanent once the job is published.
     const job = await Job.findByIdAndUpdate(id, jobData, { new: true });
     if (!job) {
       return Response.json({ message: "Job not found" }, { status: 404 });

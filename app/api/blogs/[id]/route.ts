@@ -19,10 +19,8 @@ export async function PUT(
     const { id } = await context.params;
     const blogData = await request.json();
 
-    if (blogData.title && !blogData.slug) {
-      blogData.slug = generateSlug(blogData.title);
-    }
-
+    // We strictly DO NOT update the slug during PUT requests to prevent breaking SEO URLs.
+    // The slug should remain permanent once the job is published.
     const blog = await Blog.findByIdAndUpdate(id, blogData, { new: true });
     if (!blog) {
       return Response.json({ message: "Blog not found" }, { status: 404 });
