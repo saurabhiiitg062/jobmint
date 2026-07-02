@@ -20,7 +20,7 @@ globalForMongoose.mongoose = cached;
 
 export async function connectToDatabase() {
   if (!MONGODB_URI) {
-    console.warn("Missing MONGODB_URI environment variable.m");
+    console.warn("Missing MONGODB_URI environment variable.");
     return null;
   }
 
