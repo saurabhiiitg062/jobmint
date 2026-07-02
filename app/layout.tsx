@@ -49,6 +49,7 @@ export const metadata: Metadata = {
 
 import { connectToDatabase } from '@/lib/server/db';
 import { Job as JobModel } from '@/lib/server/models/Job';
+import Script from 'next/script';
 
 export default async function RootLayout({
   children,
@@ -62,13 +63,32 @@ export default async function RootLayout({
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
     todayJobsCount = await JobModel.countDocuments({ createdAt: { $gte: startOfToday } });
-    // todayJobsCount = 10;
   } catch (error) {
     console.error('Failed to fetch today jobs count:', error);
   }
 
+  const gaId = process.env.NEXT_PUBLIC_GA_ID;
+
   return (
     <html lang="en">
+      <head>
+        {gaId && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${gaId}');
+              `}
+            </Script>
+          </>
+        )}
+      </head>
       <body className={`${notoSans.variable} antialiased min-h-screen flex flex-col pb-14 md:pb-0`}>
         <ReduxProvider>
           <div className="sticky top-0 z-50 print:hidden">
