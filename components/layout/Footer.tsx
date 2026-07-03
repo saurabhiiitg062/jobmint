@@ -2,6 +2,8 @@ import React from 'react';
 import Link from 'next/link';
 import logo from '../../public/asset/branding.png'
 
+import Image from 'next/image';
+
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
@@ -36,7 +38,7 @@ export default function Footer() {
         {/* Info Column */}
         <div className="space-y-3">
           {/* <h2 className="text-xl font-bold text-white tracking-tight">SelectionSure</h2> */}
-          <img src={logo.src} width={200} height={30} alt="logo" />
+          <Image src={logo} width={200} height={30} alt="SelectionSure Logo" className="object-contain" />
           <p className="text-xs leading-relaxed text-gray-400">
             SelectionSure is India&apos;s leading government job update portal. We provide fast, reliable, and real-time alerts for Sarkari Results, Admit Cards, Syllabi, Answer Keys, and Scheme updates.
           </p>

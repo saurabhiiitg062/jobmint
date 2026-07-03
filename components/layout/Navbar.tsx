@@ -115,18 +115,23 @@ export default function Navbar({ todayJobsCount = 0 }: { todayJobsCount?: number
 
             <button
               type="submit"
+              aria-label="Search"
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-secondary"
             >
               <Search className="w-4 h-4" />
             </button>
           </form>
 
-          <button className="hidden sm:flex p-2 border border-border-custom rounded-md text-gray-600 hover:bg-gray-100 transition">
+          <button 
+            aria-label="Toggle Dark Mode"
+            className="hidden sm:flex p-2 border border-border-custom rounded-md text-gray-600 hover:bg-gray-100 transition"
+          >
             <Moon className="w-4 h-4" />
           </button>
 
           <button
             onClick={() => setMobileMenuOpen((prev) => !prev)}
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
             className="shrink-0 rounded-md border border-border-custom p-2 text-gray-600 transition hover:bg-gray-100 md:hidden"
           >
             {mobileMenuOpen ? (
