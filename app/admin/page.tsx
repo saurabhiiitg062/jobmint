@@ -143,6 +143,18 @@ function AdminDashboardContent() {
     }
   };
 
+  const handleCloneJob = async (id: string) => {
+    try {
+      const clonedJob = await api.cloneJob(id);
+      setSuccessMsg('Job cloned successfully! You can now edit it.');
+      loadJobs();
+      loadStats();
+      handleEditJobSetup(clonedJob);
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Failed to clone job');
+    }
+  };
+
   const handleEditJobSetup = (job: Job) => {
     setIsEditingJob(job._id);
     setJobEditData(job);
@@ -286,7 +298,8 @@ function AdminDashboardContent() {
               isEditing={isEditingJob} 
               onSaveJob={onSaveJob} 
               handleEditSetup={handleEditJobSetup} 
-              handleDeleteJob={handleDeleteJob} 
+              handleDeleteJob={handleDeleteJob}
+              handleCloneJob={handleCloneJob}
               resetEditState={resetJobEditState} 
             />
           )}

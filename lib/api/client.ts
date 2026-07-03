@@ -111,6 +111,12 @@ export const api = {
     });
   },
 
+  cloneJob: (id: string) => {
+    return fetcher(`/jobs/${id}/clone`, {
+      method: 'POST'
+    });
+  },
+
   bulkImportJobs: (jobs: any[]) => {
     return fetcher('/jobs/bulk-import', {
       method: 'POST',

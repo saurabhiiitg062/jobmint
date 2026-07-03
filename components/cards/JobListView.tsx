@@ -12,7 +12,7 @@ interface JobListViewProps {
   jobs: Job[];
   title: string;
   description: string;
-  categorySlug: 'jobs' | 'admit-cards' | 'results' | 'answer-keys' | 'syllabus' | 'government-schemes';
+  categorySlug: 'jobs' | 'admit-cards' | 'results' | 'cutoffs' | 'answer-keys' | 'syllabus' | 'government-schemes';
 }
 
 export default function JobListView({ jobs, title, description, categorySlug }: JobListViewProps) {
@@ -26,7 +26,7 @@ export default function JobListView({ jobs, title, description, categorySlug }: 
       const bPinned = isPinned(b._id);
       if (aPinned && !bPinned) return -1;
       if (!aPinned && bPinned) return 1;
-      return 0;
+      return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
     });
   }
 

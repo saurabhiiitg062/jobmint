@@ -25,6 +25,7 @@ export default function Navbar({ todayJobsCount = 0 }: { todayJobsCount?: number
     { name: 'Latest Jobs', href: '/jobs' },
     { name: 'Admit Card', href: '/admit-cards' },
     { name: 'Results', href: '/results' },
+    { name: 'Cutoffs', href: '/cutoffs' },
     { name: 'Answer Key', href: '/answer-keys' },
     { name: 'Syllabus', href: '/syllabus' },
     { name: 'Age Calculator', href: '/age-calculator' },

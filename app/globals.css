@@ -9,7 +9,7 @@
   --background: #F5F5F5;
   --white: #FFFFFF;
   --border: #DDDDDD;
-  
+
   --status-success: #198754;
   --status-warning: #FFC107;
   --status-danger: #DC3545;
@@ -19,6 +19,11 @@
   --font-hindi: 'Noto Sans Devanagari', 'Noto Sans', Arial, sans-serif;
 }
 
+
+/* *{
+  font-family: 'Times New Roman', Times, serif;
+  
+} */
 @theme inline {
   --color-primary: var(--primary);
   --color-secondary: var(--secondary);
@@ -31,7 +36,7 @@
   --color-status-warning: var(--status-warning);
   --color-status-danger: var(--status-danger);
   --color-status-info: var(--status-info);
-  
+
   --font-sans: var(--font-sans);
   --font-hindi: var(--font-hindi);
 }
@@ -115,7 +120,10 @@ body {
   z-index: 2;
   position: absolute;
   content: "";
-  left: 0; right: 0; top: 0; bottom: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
   background: rgba(200, 200, 255, 0.4);
   pointer-events: none;
 }

@@ -26,7 +26,7 @@ export default function HomeJobList({ jobs, type, listClassName = '', categorySl
       const bPinned = isPinned(b._id);
       if (aPinned && !bPinned) return -1;
       if (!aPinned && bPinned) return 1;
-      return 0;
+      return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
     });
   }
 

@@ -114,6 +114,7 @@ export default function JobPostForm({ initialData, onSubmit, isEditing = false, 
     try {
       const preparedData = {
         ...formData,
+        status: 'published',
         tables,
         rawData: {
           description,
@@ -303,6 +304,7 @@ export default function JobPostForm({ initialData, onSubmit, isEditing = false, 
                 <option value="Latest Job">Latest Job</option>
                 <option value="Admit Card">Admit Card</option>
                 <option value="Result">Result</option>
+                <option value="Cutoff">Cutoff</option>
                 <option value="Answer Key">Answer Key</option>
                 <option value="Syllabus">Syllabus</option>
                 <option value="Government Scheme">Government Scheme</option>

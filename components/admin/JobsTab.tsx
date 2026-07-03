@@ -1,7 +1,7 @@
 import React from 'react';
 import JobPostForm from "@/components/JobPostForm";
 import { Job } from '@/types';
-import { FileEdit, Trash2 } from 'lucide-react';
+import { FileEdit, Trash2, Copy } from 'lucide-react';
 
 interface Props {
   jobs: Job[];
@@ -9,11 +9,12 @@ interface Props {
   onSaveJob: (data: any) => Promise<void>;
   handleEditSetup: (job: Job) => void;
   handleDeleteJob: (id: string) => void;
+  handleCloneJob: (id: string) => void;
   resetEditState: () => void;
 }
 
 export default function JobsTab({ 
-  jobs, isEditing, onSaveJob, handleEditSetup, handleDeleteJob, resetEditState 
+  jobs, isEditing, onSaveJob, handleEditSetup, handleDeleteJob, handleCloneJob, resetEditState 
 }: Props) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -40,6 +41,10 @@ export default function JobsTab({
                 <button onClick={() => handleEditSetup(job)} className="text-[10px] text-secondary font-bold flex items-center space-x-0.5 hover:underline">
                   <FileEdit className="w-3.5 h-3.5" />
                   <span>Edit</span>
+                </button>
+                <button onClick={() => handleCloneJob(job._id)} className="text-[10px] text-green-600 font-bold flex items-center space-x-0.5 hover:underline">
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>Clone</span>
                 </button>
                 <button onClick={() => handleDeleteJob(job._id)} className="text-[10px] text-status-danger font-bold flex items-center space-x-0.5 hover:underline">
                   <Trash2 className="w-3.5 h-3.5" />

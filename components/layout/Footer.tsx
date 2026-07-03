@@ -12,6 +12,7 @@ export default function Footer() {
       { name: 'Latest Jobs', href: '/jobs' },
       { name: 'Admit Cards', href: '/admit-cards' },
       { name: 'Exam Results', href: '/results' },
+      { name: 'Cutoffs', href: '/cutoffs' },
       { name: 'Answer Keys', href: '/answer-keys' },
       { name: 'Syllabus', href: '/syllabus' },
     ],

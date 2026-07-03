@@ -34,6 +34,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/jobs',
     '/admit-cards',
     '/results',
+    '/cutoffs',
     '/answer-keys',
     '/syllabus',
     '/government-schemes',
@@ -54,6 +55,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     let categorySlug = 'jobs';
     if (job.category === 'Admit Card') categorySlug = 'admit-cards';
     if (job.category === 'Result') categorySlug = 'results';
+    if (job.category === 'Cutoff') categorySlug = 'cutoffs';
     if (job.category === 'Answer Key') categorySlug = 'answer-keys';
     if (job.category === 'Syllabus') categorySlug = 'syllabus';
     if (job.category === 'Government Scheme') categorySlug = 'government-schemes';
