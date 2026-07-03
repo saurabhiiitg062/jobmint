@@ -18,7 +18,8 @@ import {
   Send,
   Share2,
   Users,
-  Printer
+  Printer,
+  MessageCircle
 } from 'lucide-react';
 import { Job } from '@/types';
 import StructuredData from '@/components/seo/StructuredData';
@@ -930,20 +931,20 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
             <section className="rounded-lg border border-border-custom bg-white p-5 shadow-sm">
               <h2 className="text-lg font-bold text-secondary">Stay Updated</h2>
               <p className="mt-2 text-sm text-gray-600">
-                Join our Telegram channel and get instant updates for new forms, admit cards, and results.
+                Join our WhatsApp channel and get instant updates for new forms, admit cards, and results.
               </p>
               <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <a
-                  href="https://t.me"
+                  href="https://whatsapp.com/channel/0029VbDJYQKAInPjpaGCeb26"
                   target="_blank"
                   rel="noopener noreferrer nofollow"
-                  className="inline-flex items-center gap-2 rounded-md bg-secondary px-4 py-3 text-sm font-bold text-white transition hover:bg-primary"
+                  className="inline-flex items-center gap-2 rounded-md bg-[#25D366] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#128C7E]"
                 >
-                  <Send className="h-4 w-4" />
-                  Join Telegram
+                  <MessageCircle className="h-4 w-4" />
+                  Join WhatsApp
                 </a>
-                <div className="flex h-20 w-20 items-center justify-center self-end rounded-lg bg-gray-50 sm:self-auto">
-                  <Send className="h-8 w-8 text-secondary" />
+                <div className="flex h-20 w-20 items-center justify-center self-end rounded-lg bg-[#25D366]/10 sm:self-auto">
+                  <MessageCircle className="h-8 w-8 text-[#25D366]" />
                 </div>
               </div>
             </section>
