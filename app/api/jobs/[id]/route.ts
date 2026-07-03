@@ -60,6 +60,12 @@ export async function PUT(
 
     // We strictly DO NOT update the slug during PUT requests to prevent breaking SEO URLs.
     // The slug should remain permanent once the job is published.
+    
+    if (jobData.updatePublishDate) {
+      jobData.publishedAt = new Date();
+    }
+    delete jobData.updatePublishDate;
+
     const job = await Job.findByIdAndUpdate(id, jobData, { new: true });
     if (!job) {
       return Response.json({ message: "Job not found" }, { status: 404 });

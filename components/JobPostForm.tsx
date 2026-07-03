@@ -44,6 +44,7 @@ export default function JobPostForm({ initialData, onSubmit, isEditing = false, 
   const [customDates, setCustomDates] = useState<{label: string, date: string}[]>(initialData?.rawData?.customDates || []);
   const [customLinks, setCustomLinks] = useState<{label: string, url: string}[]>(initialData?.rawData?.customLinks || []);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [updatePublishDate, setUpdatePublishDate] = useState(false);
   const [examsList, setExamsList] = useState<any[]>([]);
 
   React.useEffect(() => {
@@ -115,6 +116,7 @@ export default function JobPostForm({ initialData, onSubmit, isEditing = false, 
       const preparedData = {
         ...formData,
         status: 'published',
+        updatePublishDate,
         tables,
         rawData: {
           description,
@@ -600,6 +602,27 @@ export default function JobPostForm({ initialData, onSubmit, isEditing = false, 
             </div>
           </div>
         </div>
+
+        {/* SEO Bump to top */}
+        {isEditing && (
+          <div className="bg-red-50 border border-red-100 p-4 rounded-lg flex items-start space-x-3">
+            <input 
+              type="checkbox" 
+              id="updatePublishDate"
+              checked={updatePublishDate}
+              onChange={(e) => setUpdatePublishDate(e.target.checked)}
+              className="mt-1 w-4 h-4 text-primary rounded border-red-300 focus:ring-primary"
+            />
+            <div>
+              <label htmlFor="updatePublishDate" className="text-sm font-bold text-secondary block">
+                Bump to Top (Update Publish Date to Today)
+              </label>
+              <p className="text-xs text-gray-600 mt-0.5">
+                Check this if you extended the date or made a major update. This will push the post to the top of the homepage and signal freshness to Google for SEO.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Submit Buttons */}
         <div className="flex items-center space-x-3 pt-4 border-t border-border-custom">
