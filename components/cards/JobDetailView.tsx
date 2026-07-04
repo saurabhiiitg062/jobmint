@@ -204,17 +204,23 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
     },
     {
       label: 'Apply Start',
-      value: formatDate(job.exam?.importantDates?.applyStart || job.importantDates?.applyStart || job.applicationStartDate) || 'Check notice',
+      value: formatDate(job.exam?.importantDates?.applyStart || job.importantDates?.applyStart || job.applicationStartDate) || 
+             formatDate(job.rawData?.customDates?.find((cd: any) => cd.label.toLowerCase().includes('start'))?.date) || 
+             'Check notice',
       icon: CalendarDays,
     },
     {
       label: 'Last Date',
-      value: formatDate(job.exam?.importantDates?.applyLastDate || job.importantDates?.applyLastDate || job.applicationLastDate) || 'Check notice',
+      value: formatDate(job.exam?.importantDates?.applyLastDate || job.importantDates?.applyLastDate || job.applicationLastDate) || 
+             formatDate(job.rawData?.customDates?.find((cd: any) => cd.label.toLowerCase().includes('last date'))?.date) || 
+             'Check notice',
       icon: CalendarDays,
     },
     {
       label: 'Exam Date',
-      value: formatDate(job.exam?.importantDates?.examDate || job.importantDates?.examDate || job.examDate) || 'As scheduled',
+      value: formatDate(job.exam?.importantDates?.examDate || job.importantDates?.examDate || job.examDate) || 
+             formatDate(job.rawData?.customDates?.find((cd: any) => cd.label.toLowerCase().includes('exam date'))?.date) || 
+             'As scheduled',
       icon: ScrollText,
     },
     {
@@ -232,9 +238,9 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
     { label: 'Apply Mode', value: 'Online' },
     { label: 'Official Website', value: job.importantLinks?.officialWebsite || 'Check below' },
     { label: 'Notification No.', value: job.slug.toUpperCase().replace(/-/g, ' ') },
-    { label: 'Apply Start Date', value: formatDate(job.exam?.importantDates?.applyStart || job.importantDates?.applyStart || job.applicationStartDate) || 'Check notice' },
-    { label: 'Last Date to Apply', value: formatDate(job.exam?.importantDates?.applyLastDate || job.importantDates?.applyLastDate || job.applicationLastDate) || 'Check notice' },
-    { label: 'Exam Date', value: formatDate(job.exam?.importantDates?.examDate || job.importantDates?.examDate || job.examDate) || 'As scheduled' },
+    { label: 'Apply Start Date', value: formatDate(job.exam?.importantDates?.applyStart || job.importantDates?.applyStart || job.applicationStartDate) || formatDate(job.rawData?.customDates?.find((cd: any) => cd.label.toLowerCase().includes('start'))?.date) || 'Check notice' },
+    { label: 'Last Date to Apply', value: formatDate(job.exam?.importantDates?.applyLastDate || job.importantDates?.applyLastDate || job.applicationLastDate) || formatDate(job.rawData?.customDates?.find((cd: any) => cd.label.toLowerCase().includes('last date'))?.date) || 'Check notice' },
+    { label: 'Exam Date', value: formatDate(job.exam?.importantDates?.examDate || job.importantDates?.examDate || job.examDate) || formatDate(job.rawData?.customDates?.find((cd: any) => cd.label.toLowerCase().includes('exam date'))?.date) || 'As scheduled' },
     { label: 'Category', value: getCategorySummary(job.category) },
     { label: 'Qualification', value: job.exam?.eligibility?.qualification || job.qualification },
     ...(job.rawData?.customDates?.map((cd: any) => ({ label: cd.label, value: formatDate(cd.date) || 'Check notice' })) || [])
@@ -320,7 +326,7 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
 
   const otherTables = (job.tables || []).filter(table => {
     const title = table.title.toLowerCase();
-    return !title.includes('syllabus') && !title.includes('pattern') && !title.includes('vacancy') && !title.includes('cutoff');
+    return !title.includes('syllabus') && !title.includes('pattern') && !title.includes('vacancy') && !title.includes('cutoff') && !title.includes('fee') && !title.includes('date');
   });
 
   const dynamicTabs = otherTables.map((table, index) => ({
@@ -730,22 +736,31 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
 
                 <section id="important-dates" className={activeTab === 'important-dates' ? 'block' : 'hidden print:block'}>
                   <h3 className="text-lg font-bold text-secondary">Important Dates</h3>
-                  <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                    {[
-                      { label: 'Apply Start Date', value: job.exam?.importantDates?.applyStart || job.importantDates?.applyStart || job.applicationStartDate },
-                      { label: 'Last Date to Apply', value: job.exam?.importantDates?.applyLastDate || job.importantDates?.applyLastDate || job.applicationLastDate },
-                      { label: 'Fee Payment Last Date', value: job.exam?.importantDates?.feePaymentLastDate || job.importantDates?.feePaymentLastDate },
-                      { label: 'Exam Date', value: job.exam?.importantDates?.examDate || job.importantDates?.examDate || job.examDate },
-                      { label: 'Admit Card Release', value: job.exam?.importantDates?.admitCardRelease || job.importantDates?.admitCardRelease },
-                      { label: 'Result Declaration', value: job.exam?.importantDates?.resultDeclaration || job.importantDates?.resultDeclaration },
-                      ...(job.rawData?.customDates?.map((cd: any) => ({ label: cd.label, value: cd.date })) || [])
-                    ].filter(item => Boolean(item.value)).map((item) => (
-                      <div key={item.label} className="rounded-lg border border-border-custom bg-white p-4">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">{item.label}</p>
-                        <p className="mt-2 text-base font-bold text-secondary">{formatDate(item.value) || 'Check notice'}</p>
-                      </div>
-                    ))}
-                  </div>
+                  
+                  {job.tables && job.tables.some(t => t.title.toLowerCase().includes('date')) ? (
+                    <div className="mt-4 space-y-4">
+                      {job.tables.filter(table => table.title.toLowerCase().includes('date')).map((table, index) => (
+                        <DynamicTable key={index} table={table} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                      {[
+                        { label: 'Apply Start Date', value: job.exam?.importantDates?.applyStart || job.importantDates?.applyStart || job.applicationStartDate },
+                        { label: 'Last Date to Apply', value: job.exam?.importantDates?.applyLastDate || job.importantDates?.applyLastDate || job.applicationLastDate },
+                        { label: 'Fee Payment Last Date', value: job.exam?.importantDates?.feePaymentLastDate || job.importantDates?.feePaymentLastDate },
+                        { label: 'Exam Date', value: job.exam?.importantDates?.examDate || job.importantDates?.examDate || job.examDate },
+                        { label: 'Admit Card Release', value: job.exam?.importantDates?.admitCardRelease || job.importantDates?.admitCardRelease },
+                        { label: 'Result Declaration', value: job.exam?.importantDates?.resultDeclaration || job.importantDates?.resultDeclaration },
+                        ...(job.rawData?.customDates?.map((cd: any) => ({ label: cd.label, value: cd.date })) || [])
+                      ].filter(item => Boolean(item.value)).map((item) => (
+                        <div key={item.label} className="rounded-lg border border-border-custom bg-white p-4">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">{item.label}</p>
+                          <p className="mt-2 text-base font-bold text-secondary">{formatDate(item.value) || 'Check notice'}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </section>
 
                 <section id="eligibility" className={activeTab === 'eligibility' ? 'block' : 'hidden print:block'}>
@@ -771,15 +786,24 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
 
                 <section id="application-fee" className={activeTab === 'application-fee' ? 'block' : 'hidden print:block'}>
                   <h3 className="text-lg font-bold text-secondary">Application Fee</h3>
-                  <div className="mt-4 rounded-lg border border-border-custom bg-white p-4">
-                    <div className="flex items-center gap-2 text-primary">
-                      <CircleDollarSign className="h-5 w-5" />
-                      <p className="font-bold">Fee Details</p>
+                  
+                  {job.tables && job.tables.some(t => t.title.toLowerCase().includes('fee')) ? (
+                    <div className="mt-4 space-y-4">
+                      {job.tables.filter(table => table.title.toLowerCase().includes('fee')).map((table, index) => (
+                        <DynamicTable key={index} table={table} />
+                      ))}
                     </div>
-                    <p className="mt-3 text-sm font-semibold text-gray-700">
-                      {job.exam?.applicationFee || job.applicationFee || job.fee || 'Please refer to the official notification for category-wise fee details.'}
-                    </p>
-                  </div>
+                  ) : (
+                    <div className="mt-4 rounded-lg border border-border-custom bg-white p-4">
+                      <div className="flex items-center gap-2 text-primary">
+                        <CircleDollarSign className="h-5 w-5" />
+                        <p className="font-bold">Fee Details</p>
+                      </div>
+                      <p className="mt-3 text-sm font-semibold text-gray-700">
+                        {job.exam?.applicationFee || job.applicationFee || job.fee || 'Please refer to the official notification for category-wise fee details.'}
+                      </p>
+                    </div>
+                  )}
                 </section>
 
                 <section id="syllabus" className={activeTab === 'syllabus' ? 'block' : 'hidden print:hidden'}>
