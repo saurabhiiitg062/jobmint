@@ -30,6 +30,24 @@ interface Props {
   onChange: (value: string) => void;
 }
 
+const CustomLink = Link.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      rel: {
+        default: 'noopener noreferrer nofollow',
+        parseHTML: element => element.getAttribute('rel'),
+        renderHTML: attributes => {
+          if (!attributes.rel) {
+            return {};
+          }
+          return { rel: attributes.rel };
+        },
+      },
+    };
+  },
+});
+
 export default function TiptapEditor({
   value,
   onChange,
@@ -53,11 +71,8 @@ export default function TiptapEditor({
       TextAlign.configure({
         types: ['heading', 'paragraph'],
       }),
-      Link.configure({
+      CustomLink.configure({
         openOnClick: false,
-        HTMLAttributes: {
-          rel: 'noopener noreferrer nofollow',
-        },
       }),
     ],
     content: value,
@@ -101,7 +116,10 @@ export default function TiptapEditor({
       return;
     }
     
-    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+    const isNoFollow = window.confirm('Should this link be "nofollow"? (Click OK for Nofollow, Cancel for Dofollow)');
+    const rel = isNoFollow ? 'noopener noreferrer nofollow' : 'noopener noreferrer';
+    
+    editor.chain().focus().extendMarkRange('link').setLink({ href: url, rel }).run();
   };
 
   const ToolbarButton = ({ onClick, isActive, icon: Icon, title, disabled = false }: any) => (
