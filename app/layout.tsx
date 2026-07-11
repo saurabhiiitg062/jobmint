@@ -103,8 +103,11 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <head>
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2567289600990299"
-     crossorigin="anonymous"></script>
+         <meta
+    name="google-adsense-account"
+    content="ca-pub-2567289600990299"
+  />
+       
         {gaId && (
           <>
             <Script
