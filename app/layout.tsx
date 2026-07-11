@@ -45,6 +45,17 @@ export const metadata: Metadata = {
     creator: '@selectionsure',
     images: ['/asset/branding.png'],
   },
+  icons: {
+    icon: [
+      { url: '/favicon/favicon.ico' },
+      { url: '/favicon/icon1.png', type: 'image/png' },
+      { url: '/favicon/icon0.svg', type: 'image/svg+xml' },
+    ],
+    apple: [
+      { url: '/favicon/apple-icon.png' }
+    ],
+  },
+  manifest: '/favicon/manifest.json',
 };
 
 import { connectToDatabase } from '@/lib/server/db';
