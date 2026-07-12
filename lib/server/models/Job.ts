@@ -39,6 +39,7 @@ const JobSchema = new Schema(
     seoDescription: { type: String },
     focusKeyword: { type: String },
     featuredImage: { type: String },
+    content: { type: String, default: "" },
     status: { type: String, enum: ["draft", "published"], default: "published" },
     views: { type: Number, default: 0 },
     publishedAt: { type: Date, default: Date.now },

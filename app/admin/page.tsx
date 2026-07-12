@@ -9,13 +9,15 @@ import { RootState } from '@/store/store';
 import { setCredentials, logout } from '@/store/authSlice';
 import { api } from '@/lib/api/client';
 import { Job, Blog } from '@/types';
-import { Lock, Mail, BarChart3, Plus, Settings, LogOut, FileText, Database, GraduationCap, ChevronRight } from 'lucide-react';
+import { Lock, Mail, BarChart3, Plus, Settings, LogOut, FileText, Database, GraduationCap, ChevronRight, Building, Edit3 } from 'lucide-react';
 
 import AnalyticsTab from '@/components/admin/AnalyticsTab';
 import JobsTab from '@/components/admin/JobsTab';
 import BlogsTab from '@/components/admin/BlogsTab';
 import ExamsTab from '@/components/admin/ExamsTab';
 import MasterDataTab from '@/components/admin/MasterDataTab';
+import OrganizationsTab from '@/components/admin/OrganizationsTab';
+import UniversalEditorTab from '@/components/admin/UniversalEditorTab';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 
@@ -43,8 +45,8 @@ function AdminDashboardContent() {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get('tab') as any;
 
-  // Tabs: analytics, jobs, blogs, exams, master
-  const [activeTab, setActiveTabState] = useState<'analytics' | 'jobs' | 'blogs' | 'exams' | 'master'>(tabParam || 'analytics');
+  // Tabs: analytics, universal, jobs, blogs, exams, master, organizations
+  const [activeTab, setActiveTabState] = useState<'analytics' | 'universal' | 'jobs' | 'blogs' | 'exams' | 'master' | 'organizations'>(tabParam || 'analytics');
   
   const setActiveTab = (tab: string) => {
     setActiveTabState(tab as any);
@@ -229,10 +231,12 @@ function AdminDashboardContent() {
 
   const navItems = [
     { id: 'analytics', label: 'Dashboard', icon: BarChart3 },
-    { id: 'jobs', label: 'Jobs', icon: Plus },
+    { id: 'universal', label: 'Write Content (Universal)', icon: Edit3 },
+    { id: 'jobs', label: 'Manage Jobs', icon: Plus },
     { id: 'exams', label: 'Exams & Results', icon: GraduationCap },
     { id: 'blogs', label: 'Blogs', icon: FileText },
     { id: 'master', label: 'Master Data', icon: Database },
+    { id: 'organizations', label: 'Pillar Pages', icon: Building },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
@@ -292,6 +296,7 @@ function AdminDashboardContent() {
         <div className="flex-1 min-w-0 flex flex-col space-y-4">
           <div>
           {activeTab === 'analytics' && <AnalyticsTab stats={stats} setActiveTab={setActiveTab} />}
+          {activeTab === 'universal' && <UniversalEditorTab />}
           {activeTab === 'jobs' && (
             <JobsTab 
               jobs={jobs} 
@@ -315,6 +320,7 @@ function AdminDashboardContent() {
           )}
           {activeTab === 'exams' && <ExamsTab />}
           {activeTab === 'master' && <MasterDataTab />}
+          {activeTab === 'organizations' && <OrganizationsTab />}
           {activeTab === 'settings' as any && (
             <div className="bg-white border border-border-custom rounded-lg p-6 shadow-sm space-y-4">
               <h3 className="text-sm font-bold uppercase tracking-wider text-secondary border-b pb-2">Site Settings</h3>

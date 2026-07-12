@@ -13,6 +13,7 @@ import StructuredData from '@/components/seo/StructuredData';
 import { connectToDatabase } from '@/lib/server/db';
 import { Job as JobModel } from '@/lib/server/models/Job';
 import { Blog as BlogModel } from '@/lib/server/models/Blog';
+import { Organization as OrganizationModel } from '@/lib/server/models/Organization';
 
 // Force SSG by default, revalidate every 300 seconds
 export const revalidate = 300;
@@ -20,6 +21,7 @@ export const revalidate = 300;
 export default async function HomePage() {
   let dbJobs: Job[] = [];
   let dbBlogs: Blog[] = [];
+  let dbOrganizations: any[] = [];
 
   try {
     await connectToDatabase();
@@ -36,6 +38,9 @@ export default async function HomePage() {
       .limit(6)
       .lean();
     dbBlogs = JSON.parse(JSON.stringify(fetchedBlogs));
+
+    const fetchedOrgs = await OrganizationModel.find({}).sort({ name: 1 }).lean();
+    dbOrganizations = JSON.parse(JSON.stringify(fetchedOrgs));
   } catch (error) {
     console.warn('Database connection failed. Falling back to local mock data.', error);
   }
@@ -79,7 +84,14 @@ export default async function HomePage() {
 
   const qualifications = ['10th Pass', '12th Pass', 'Diploma', 'Graduation', 'B.Tech'];
   const states = ['Bihar', 'Karnataka', 'UP', 'Delhi'];
-  const organizations = ['SSC', 'UPSC', 'RRB', 'ISRO', 'DRDO', 'IBPS', 'NTA'];
+  
+  // Combine hardcoded defaults with dynamic ones to ensure it never looks empty
+  const defaultOrgs = [{ name: 'SSC', slug: 'ssc' }, { name: 'UPSC', slug: 'upsc' }, { name: 'RRB', slug: 'rrb' }];
+  const orgMap = new Map();
+  defaultOrgs.forEach(o => orgMap.set(o.slug, o.name));
+  dbOrganizations.forEach(o => orgMap.set(o.slug, o.name));
+  
+  const finalOrganizations = Array.from(orgMap.entries()).map(([slug, name]) => ({ slug, name }));
 
   const websiteSchema = {
     '@context': 'https://schema.org',
@@ -455,13 +467,13 @@ export default async function HomePage() {
               <span>Jobs by Organisation</span>
             </h4>
             <div className="flex flex-wrap gap-2">
-              {organizations.map((o) => (
+              {finalOrganizations.map((o) => (
                 <Link
-                  key={o}
-                  href={`/organization/${encodeURIComponent(o.toLowerCase())}`}
+                  key={o.slug}
+                  href={`/organization/${o.slug}`}
                   className="bg-gray-100 hover:bg-gray-800 hover:text-white px-3 py-1.5 rounded text-xs font-semibold text-gray-700 transition-colors"
                 >
-                  {o} Recruitment
+                  {o.name} Recruitment
                 </Link>
               ))}
             </div>

@@ -86,6 +86,7 @@ export interface Job {
   seoDescription?: string;
   focusKeyword?: string;
   featuredImage?: string;
+  content?: string;
   status: 'draft' | 'published';
   views: number;
   publishedAt: string;
@@ -113,6 +114,18 @@ export interface Blog {
   publishedAt: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface Organization {
+  _id: string;
+  name: string;
+  slug: string;
+  logo?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  content: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Admin {
