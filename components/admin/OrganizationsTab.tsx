@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useForm, Controller } from 'react-form';
+import { useForm, Controller } from 'react-hook-form';
 import { Organization } from '@/types';
 import TiptapEditor from '../TiptapEditor';
 import { Pencil, Trash2, Plus, X, Save } from 'lucide-react';
