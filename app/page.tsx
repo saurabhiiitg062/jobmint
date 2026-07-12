@@ -260,7 +260,16 @@ export default async function HomePage() {
                     {/* Info */}
                     <div className="min-w-0">
                       <Link
-                        href={`/jobs/${job.slug}`}
+                        href={`/${(() => {
+                          switch (job.category) {
+                            case 'Admit Card': return 'admit-cards';
+                            case 'Result': return 'results';
+                            case 'Answer Key': return 'answer-keys';
+                            case 'Syllabus': return 'syllabus';
+                            case 'Government Scheme': return 'government-schemes';
+                            default: return 'jobs';
+                          }
+                        })()}/${job.slug}`}
                         className="block text-sm font-bold text-secondary hover:text-primary leading-snug truncate"
                       >
                         {job.title}

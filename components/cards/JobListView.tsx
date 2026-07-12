@@ -40,7 +40,18 @@ export default function JobListView({ jobs, title, description, categorySlug }: 
       <div className="bg-white border border-border-custom rounded-lg shadow-sm divide-y divide-gray-100">
         <AnimatePresence>
         {displayJobs.length > 0 ? (
-          displayJobs.map((job) => (
+          displayJobs.map((job) => {
+            const actualCategorySlug = (() => {
+              switch (job.category) {
+                case 'Admit Card': return 'admit-cards';
+                case 'Result': return 'results';
+                case 'Answer Key': return 'answer-keys';
+                case 'Syllabus': return 'syllabus';
+                case 'Government Scheme': return 'government-schemes';
+                default: return 'jobs';
+              }
+            })();
+            return (
             <motion.div
               key={job._id}
               layout
@@ -52,7 +63,7 @@ export default function JobListView({ jobs, title, description, categorySlug }: 
             >
               <div className="space-y-1.5 flex-1 pr-4">
                 <Link
-                  href={`/${categorySlug}/${job.slug}`}
+                  href={`/${actualCategorySlug}/${job.slug}`}
                   className="font-bold text-sm sm:text-base text-primary hover:text-red-700 hover:underline block leading-snug"
                 >
                   {job.title}
@@ -69,7 +80,7 @@ export default function JobListView({ jobs, title, description, categorySlug }: 
               <div className="flex items-center space-x-2">
                 <PinButton job={job} />
                 <Link
-                  href={`/${categorySlug}/${job.slug}`}
+                  href={`/${actualCategorySlug}/${job.slug}`}
                   className="bg-secondary hover:bg-primary text-white p-2 rounded-md transition-colors"
                   aria-label="View details"
                 >
@@ -77,7 +88,7 @@ export default function JobListView({ jobs, title, description, categorySlug }: 
                 </Link>
               </div>
             </motion.div>
-          ))
+          )})
         ) : (
           <div className="py-12 text-center text-gray-400 text-sm">
             No updates found at the moment. Please check back later.

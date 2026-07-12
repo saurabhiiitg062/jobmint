@@ -24,7 +24,16 @@ export default function PinnedJobsWidget() {
         {pinnedJobs.map((job) => (
           <Link
             key={job._id}
-            href={`/jobs/${job.slug}`}
+            href={`/${(() => {
+              switch (job.category) {
+                case 'Admit Card': return 'admit-cards';
+                case 'Result': return 'results';
+                case 'Answer Key': return 'answer-keys';
+                case 'Syllabus': return 'syllabus';
+                case 'Government Scheme': return 'government-schemes';
+                default: return 'jobs';
+              }
+            })()}/${job.slug}`}
             className="block py-2 text-xs hover:text-primary transition-colors"
           >
             <div className="font-medium">{job.title}</div>
