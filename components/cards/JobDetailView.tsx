@@ -660,7 +660,7 @@ export default function JobDetailView({ job, categorySlug }: JobDetailViewProps)
 
                   {job.content && (
                     <div 
-                      className="mt-8 prose prose-blue max-w-none prose-headings:font-bold prose-h2:text-2xl prose-h2:mt-10 prose-h2:border-b prose-h2:pb-2 prose-a:text-blue-600 prose-img:rounded-xl prose-table:w-full prose-table:border-collapse prose-table:my-6 prose-th:border prose-th:border-gray-300 prose-th:bg-gray-100 prose-th:px-4 prose-th:py-2 prose-th:text-left prose-td:border prose-td:border-gray-300 prose-td:px-4 prose-td:py-2"
+                      className="mt-8 overflow-x-auto prose prose-blue max-w-none prose-headings:font-bold prose-h2:text-2xl prose-h2:mt-10 prose-h2:border-b prose-h2:pb-2 prose-a:text-blue-600 prose-img:rounded-xl prose-table:w-full prose-table:border-collapse prose-table:my-6 prose-th:border prose-th:border-gray-300 prose-th:bg-gray-100 prose-th:px-2 md:prose-th:px-4 prose-th:py-1 md:prose-th:py-2 prose-th:text-left prose-td:border prose-td:border-gray-300 prose-td:px-2 md:prose-td:px-4 prose-td:py-1 md:prose-td:py-2"
                       dangerouslySetInnerHTML={{ __html: job.content }}
                     />
                   )}

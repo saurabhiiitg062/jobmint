@@ -140,7 +140,7 @@ export default async function BlogSlugPage({ params }: PageProps) {
       </div>
 
       <div 
-        className="prose prose-sm sm:prose-base md:prose-lg max-w-none text-gray-700 prose-headings:text-secondary prose-a:text-primary prose-strong:text-gray-900 prose-img:rounded-lg prose-img:shadow-md tiptap-content"
+        className="overflow-x-auto prose prose-sm sm:prose-base md:prose-lg max-w-none text-gray-700 prose-headings:text-secondary prose-a:text-primary prose-strong:text-gray-900 prose-img:rounded-lg prose-img:shadow-md tiptap-content"
         dangerouslySetInnerHTML={{ __html: blog.content }}
       />
 
