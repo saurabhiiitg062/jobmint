@@ -103,17 +103,23 @@ export default function ManageContentTab({
               <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b">
                 <tr>
                   <th className="px-6 py-3">Title / Name</th>
+                  <th className="px-6 py-3">Category</th>
                   <th className="px-6 py-3">Slug</th>
                   <th className="px-6 py-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {activeSubTab === 'jobs' && jobs.length === 0 && (
-                  <tr><td colSpan={3} className="px-6 py-8 text-center">No jobs found.</td></tr>
+                  <tr><td colSpan={4} className="px-6 py-8 text-center">No jobs found.</td></tr>
                 )}
                 {activeSubTab === 'jobs' && jobs.map((job) => (
                   <tr key={job._id} className="bg-white border-b hover:bg-gray-50">
                     <td className="px-6 py-4 font-medium text-gray-900">{job.title}</td>
+                    <td className="px-6 py-4">
+                      <span className="bg-blue-50 text-blue-600 px-2.5 py-1 rounded-md text-xs font-semibold">
+                        {job.category}
+                      </span>
+                    </td>
                     <td className="px-6 py-4">{job.slug}</td>
                     <td className="px-6 py-4 text-right">
                       <button onClick={() => onEdit(job, 'job')} className="text-blue-600 hover:text-blue-800 mr-4">
@@ -127,11 +133,16 @@ export default function ManageContentTab({
                 ))}
 
                 {activeSubTab === 'blogs' && blogs.length === 0 && (
-                  <tr><td colSpan={3} className="px-6 py-8 text-center">No blogs found.</td></tr>
+                  <tr><td colSpan={4} className="px-6 py-8 text-center">No blogs found.</td></tr>
                 )}
                 {activeSubTab === 'blogs' && blogs.map((blog) => (
                   <tr key={blog._id} className="bg-white border-b hover:bg-gray-50">
                     <td className="px-6 py-4 font-medium text-gray-900">{blog.title}</td>
+                    <td className="px-6 py-4">
+                      <span className="bg-purple-50 text-purple-600 px-2.5 py-1 rounded-md text-xs font-semibold">
+                        Blog
+                      </span>
+                    </td>
                     <td className="px-6 py-4">{blog.slug}</td>
                     <td className="px-6 py-4 text-right">
                       <button onClick={() => onEdit(blog, 'blog')} className="text-blue-600 hover:text-blue-800 mr-4">
@@ -145,11 +156,16 @@ export default function ManageContentTab({
                 ))}
 
                 {activeSubTab === 'organizations' && orgs.length === 0 && (
-                  <tr><td colSpan={3} className="px-6 py-8 text-center">No pillar pages found.</td></tr>
+                  <tr><td colSpan={4} className="px-6 py-8 text-center">No pillar pages found.</td></tr>
                 )}
                 {activeSubTab === 'organizations' && orgs.map((org) => (
                   <tr key={org._id} className="bg-white border-b hover:bg-gray-50">
                     <td className="px-6 py-4 font-medium text-gray-900">{org.name}</td>
+                    <td className="px-6 py-4">
+                      <span className="bg-green-50 text-green-600 px-2.5 py-1 rounded-md text-xs font-semibold">
+                        Pillar Page
+                      </span>
+                    </td>
                     <td className="px-6 py-4">{org.slug}</td>
                     <td className="px-6 py-4 text-right">
                       <button onClick={() => onEdit(org, 'organization')} className="text-blue-600 hover:text-blue-800 mr-4">
