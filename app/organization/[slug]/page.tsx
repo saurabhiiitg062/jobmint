@@ -58,7 +58,7 @@ export default async function OrganizationPage({ params }: PageProps) {
   let childOrgs: IOrganization[] = [];
   try {
     await connectToDatabase();
-    const orgDoc = await Organization.findOne({ slug: slug.toLowerCase() }).lean();
+    const orgDoc = await Organization.findOne({ slug: slug.toLowerCase() }).lean() as any;
     if (orgDoc) {
       orgData = JSON.parse(JSON.stringify(orgDoc));
       const children = await Organization.find({ parentOrganization: orgDoc._id }).lean();
