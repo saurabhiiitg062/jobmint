@@ -2,7 +2,8 @@ import { MetadataRoute } from 'next';
 import { connectToDatabase } from '@/lib/server/db';
 import { Job as JobModel } from '@/lib/server/models/Job';
 import { Blog as BlogModel } from '@/lib/server/models/Blog';
-import { Job, Blog } from '@/types';
+import { Organization as OrgModel } from '@/lib/server/models/Organization';
+import { Job, Blog, Organization } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,6 +11,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://selectionsure.app';
   let jobsList: Job[] = [];
   let blogsList: Blog[] = [];
+  let orgsList: Organization[] = [];
 
   try {
     await connectToDatabase();
@@ -24,6 +26,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .limit(500)
       .lean();
     blogsList = JSON.parse(JSON.stringify(fetchedBlogs));
+
+    const fetchedOrgs = await OrgModel.find({})
+      .sort({ updatedAt: -1 })
+      .limit(500)
+      .lean();
+    orgsList = JSON.parse(JSON.stringify(fetchedOrgs));
   } catch (e) {
     console.error('Error fetching data for sitemap:', e);
   }
@@ -76,5 +84,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  return [...routes, ...jobUrls, ...blogUrls];
+  // Organization (Pillar) dynamic pages
+  const orgUrls = orgsList.map((org) => ({
+    url: `${baseUrl}/organization/${org.slug}`,
+    lastModified: new Date(org.updatedAt || new Date()),
+    changeFrequency: 'daily' as const,
+    priority: 0.9, // High priority for pillar pages
+  }));
+
+  return [...routes, ...jobUrls, ...blogUrls, ...orgUrls];
 }

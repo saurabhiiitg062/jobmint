@@ -12,11 +12,8 @@ import { Job, Blog } from '@/types';
 import { Lock, Mail, BarChart3, Plus, Settings, LogOut, FileText, Database, GraduationCap, ChevronRight, Building, Edit3 } from 'lucide-react';
 
 import AnalyticsTab from '@/components/admin/AnalyticsTab';
-import JobsTab from '@/components/admin/JobsTab';
-import BlogsTab from '@/components/admin/BlogsTab';
-import ExamsTab from '@/components/admin/ExamsTab';
+import ManageContentTab from '@/components/admin/ManageContentTab';
 import MasterDataTab from '@/components/admin/MasterDataTab';
-import OrganizationsTab from '@/components/admin/OrganizationsTab';
 import UniversalEditorTab from '@/components/admin/UniversalEditorTab';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
@@ -45,8 +42,7 @@ function AdminDashboardContent() {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get('tab') as any;
 
-  // Tabs: analytics, universal, jobs, blogs, exams, master, organizations
-  const [activeTab, setActiveTabState] = useState<'analytics' | 'universal' | 'jobs' | 'blogs' | 'exams' | 'master' | 'organizations'>(tabParam || 'analytics');
+  const [activeTab, setActiveTabState] = useState<'analytics' | 'universal' | 'manage' | 'master' | 'settings'>(tabParam || 'analytics');
   
   const setActiveTab = (tab: string) => {
     setActiveTabState(tab as any);
@@ -63,11 +59,18 @@ function AdminDashboardContent() {
   const [successMsg, setSuccessMsg] = useState('');
   
   // Editing State
-  const [isEditingJob, setIsEditingJob] = useState<string | null>(null);
-  const [isEditingBlog, setIsEditingBlog] = useState<string | null>(null);
+  const [editData, setEditData] = useState<any>(null);
+  const [editType, setEditType] = useState<'job'|'blog'|'organization'>('job');
 
-  // Job Form Data references for when handleEditSetup is called
-  const [jobEditData, setJobEditData] = useState<Job | null>(null);
+  const handleEdit = (data: any, type: 'job' | 'blog' | 'organization') => {
+    setEditData(data);
+    setEditType(type);
+    setActiveTab('universal');
+  };
+
+  const resetEditState = () => {
+    setEditData(null);
+  };
 
   const { register: registerLogin, handleSubmit: handleLoginSubmit, formState: { errors: loginErrors } } = useForm({
     resolver: zodResolver(loginSchema)
@@ -76,8 +79,6 @@ function AdminDashboardContent() {
   useEffect(() => {
     if (isAuthenticated) {
       loadStats();
-      loadJobs();
-      loadBlogs();
     }
   }, [isAuthenticated]);
 
@@ -93,20 +94,6 @@ function AdminDashboardContent() {
     }
   };
 
-  const loadJobs = async () => {
-    try {
-      const data = await api.getJobs({ limit: 100 });
-      setJobs(data.jobs);
-    } catch (e) { setJobs([]); }
-  };
-
-  const loadBlogs = async () => {
-    try {
-      const data = await api.getBlogs({ limit: 100 });
-      setBlogs(data.blogs);
-    } catch (e) { setBlogs([]); }
-  };
-
   const onLogin = async (data: any) => {
     setErrorMsg('');
     try {
@@ -116,91 +103,6 @@ function AdminDashboardContent() {
     } catch (err: any) {
       setErrorMsg(err.message || 'Login failed.');
     }
-  };
-
-  // JOB HANDLERS
-  const onSaveJob = async (formData: any) => {
-    setErrorMsg(''); setSuccessMsg('');
-    try {
-      if (isEditingJob) {
-        await api.updateJob(isEditingJob, formData);
-        setSuccessMsg('Job updated successfully');
-      } else {
-        await api.createJob(formData);
-        setSuccessMsg('Job created successfully');
-      }
-      setIsEditingJob(null);
-      setJobEditData(null);
-      loadJobs(); loadStats();
-    } catch (err: any) { setErrorMsg(err.message || 'Action failed.'); }
-  };
-
-  const handleDeleteJob = async (id: string) => {
-    if (confirm('Are you sure you want to delete this job?')) {
-      try {
-        await api.deleteJob(id);
-        setSuccessMsg('Job deleted successfully');
-        loadJobs(); loadStats();
-      } catch (err: any) { setErrorMsg(err.message || 'Failed to delete'); }
-    }
-  };
-
-  const handleCloneJob = async (id: string) => {
-    try {
-      const clonedJob = await api.cloneJob(id);
-      setSuccessMsg('Job cloned successfully! You can now edit it.');
-      loadJobs();
-      loadStats();
-      handleEditJobSetup(clonedJob);
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Failed to clone job');
-    }
-  };
-
-  const handleEditJobSetup = (job: Job) => {
-    setIsEditingJob(job._id);
-    setJobEditData(job);
-    setActiveTab('jobs');
-  };
-
-  const resetJobEditState = () => {
-    setIsEditingJob(null);
-    setJobEditData(null);
-  };
-
-  // BLOG HANDLERS
-  const onSaveBlog = async (formData: any) => {
-    setErrorMsg(''); setSuccessMsg('');
-    try {
-      if (isEditingBlog) {
-        await api.updateBlog(isEditingBlog, formData);
-        setSuccessMsg('Blog updated successfully');
-      } else {
-        await api.createBlog(formData);
-        setSuccessMsg('Blog created successfully');
-      }
-      setIsEditingBlog(null);
-      loadBlogs(); loadStats();
-    } catch (err: any) { setErrorMsg(err.message || 'Action failed.'); }
-  };
-
-  const handleDeleteBlog = async (id: string) => {
-    if (confirm('Are you sure you want to delete this blog?')) {
-      try {
-        await api.deleteBlog(id);
-        setSuccessMsg('Blog deleted successfully');
-        loadBlogs(); loadStats();
-      } catch (err: any) { setErrorMsg(err.message || 'Failed to delete blog'); }
-    }
-  };
-
-  const handleEditBlogSetup = (blog: Blog) => {
-    setIsEditingBlog(blog._id);
-    setActiveTab('blogs');
-  };
-
-  const resetBlogEditState = () => {
-    setIsEditingBlog(null);
   };
 
   if (!ready) return null;
@@ -232,11 +134,8 @@ function AdminDashboardContent() {
   const navItems = [
     { id: 'analytics', label: 'Dashboard', icon: BarChart3 },
     { id: 'universal', label: 'Write Content (Universal)', icon: Edit3 },
-    { id: 'jobs', label: 'Manage Jobs', icon: Plus },
-    { id: 'exams', label: 'Exams & Results', icon: GraduationCap },
-    { id: 'blogs', label: 'Blogs', icon: FileText },
+    { id: 'manage', label: 'Manage Content', icon: FileText },
     { id: 'master', label: 'Master Data', icon: Database },
-    { id: 'organizations', label: 'Pillar Pages', icon: Building },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
@@ -296,31 +195,25 @@ function AdminDashboardContent() {
         <div className="flex-1 min-w-0 flex flex-col space-y-4">
           <div>
           {activeTab === 'analytics' && <AnalyticsTab stats={stats} setActiveTab={setActiveTab} />}
-          {activeTab === 'universal' && <UniversalEditorTab />}
-          {activeTab === 'jobs' && (
-            <JobsTab 
-              jobs={jobs} 
-              isEditing={isEditingJob} 
-              onSaveJob={onSaveJob} 
-              handleEditSetup={handleEditJobSetup} 
-              handleDeleteJob={handleDeleteJob}
-              handleCloneJob={handleCloneJob}
-              resetEditState={resetJobEditState} 
+          {activeTab === 'universal' && (
+            <UniversalEditorTab 
+              editData={editData} 
+              editType={editType}
+              onCancelEdit={() => {
+                resetEditState();
+                setActiveTab('manage');
+              }}
+              onSuccess={() => {
+                resetEditState();
+                setActiveTab('manage');
+                loadStats();
+              }}
             />
           )}
-          {activeTab === 'blogs' && (
-            <BlogsTab 
-              blogs={blogs} 
-              isEditingBlog={isEditingBlog} 
-              onSaveBlog={onSaveBlog} 
-              handleEditBlogSetup={handleEditBlogSetup} 
-              handleDeleteBlog={handleDeleteBlog} 
-              resetEditState={resetBlogEditState} 
-            />
+          {activeTab === 'manage' && (
+            <ManageContentTab onEdit={handleEdit} />
           )}
-          {activeTab === 'exams' && <ExamsTab />}
           {activeTab === 'master' && <MasterDataTab />}
-          {activeTab === 'organizations' && <OrganizationsTab />}
           {activeTab === 'settings' as any && (
             <div className="bg-white border border-border-custom rounded-lg p-6 shadow-sm space-y-4">
               <h3 className="text-sm font-bold uppercase tracking-wider text-secondary border-b pb-2">Site Settings</h3>

@@ -55,11 +55,14 @@ export default async function OrganizationPage({ params }: PageProps) {
   
   // 1. Check if we have a detailed Pillar Page for this organization
   let orgData: IOrganization | null = null;
+  let childOrgs: IOrganization[] = [];
   try {
     await connectToDatabase();
     const orgDoc = await Organization.findOne({ slug: slug.toLowerCase() }).lean();
     if (orgDoc) {
       orgData = JSON.parse(JSON.stringify(orgDoc));
+      const children = await Organization.find({ parentOrganization: orgDoc._id }).lean();
+      childOrgs = JSON.parse(JSON.stringify(children));
     }
   } catch (error) {
     console.error('Error fetching organization pillar page:', error);
@@ -107,6 +110,29 @@ export default async function OrganizationPage({ params }: PageProps) {
                 dangerouslySetInnerHTML={{ __html: processedHtml }}
               />
             </div>
+
+            {/* Child Organizations / Sub-Categories */}
+            {childOrgs.length > 0 && (
+              <div className="mb-8" id="sub-categories">
+                <h2 className="text-2xl font-bold mb-6">Exams under {orgData.name}</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  {childOrgs.map(child => (
+                    <Link key={child._id as string} href={`/organization/${child.slug}`} className="flex items-center gap-3 bg-white p-4 rounded-xl border border-blue-100 shadow-sm hover:shadow-md hover:border-blue-300 transition-all group">
+                      {child.logo ? (
+                        <img src={child.logo} alt={child.name} className="w-10 h-10 object-contain rounded-md" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-md bg-blue-50 flex items-center justify-center text-blue-600 font-bold text-lg group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                          {child.name.charAt(0)}
+                        </div>
+                      )}
+                      <div>
+                        <h3 className="font-bold text-gray-800 group-hover:text-blue-600 transition-colors">{child.name}</h3>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
             
             {/* Embedded Jobs Feed */}
             {filteredJobs.length > 0 && (
@@ -143,8 +169,13 @@ export default async function OrganizationPage({ params }: PageProps) {
                     {item.text}
                   </a>
                 ))}
+                {childOrgs.length > 0 && (
+                  <a href="#sub-categories" className="block text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors pt-2 border-t mt-2">
+                    Exams under {orgData.name}
+                  </a>
+                )}
                 {filteredJobs.length > 0 && (
-                  <a href="#latest-jobs" className="block text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors pt-2 border-t mt-2">
+                  <a href="#latest-jobs" className={`block text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors ${childOrgs.length === 0 ? 'pt-2 border-t mt-2' : ''}`}>
                     Latest Jobs & Updates
                   </a>
                 )}

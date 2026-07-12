@@ -1,13 +1,44 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import TiptapEditor from '../TiptapEditor';
 import { Save, FileText, Briefcase, Building } from 'lucide-react';
 
-export default function UniversalEditorTab() {
-  const [postType, setPostType] = useState<'job' | 'blog' | 'organization'>('job');
+interface UniversalEditorProps {
+  editData?: any | null;
+  editType?: 'job' | 'blog' | 'organization';
+  onCancelEdit?: () => void;
+  onSuccess?: () => void;
+}
+
+export default function UniversalEditorTab({ 
+  editData = null, 
+  editType = 'job',
+  onCancelEdit,
+  onSuccess
+}: UniversalEditorProps) {
+  const [postType, setPostType] = useState<'job' | 'blog' | 'organization'>(editType);
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
+  const [slugEdited, setSlugEdited] = useState(false);
+  
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTitle = e.target.value;
+    setTitle(newTitle);
+    
+    if (!slugEdited) {
+      const generatedSlug = newTitle
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      setSlug(generatedSlug);
+    }
+  };
+
+  const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSlug(e.target.value);
+    setSlugEdited(true);
+  };
   const [content, setContent] = useState('');
   
   // Job Meta Fields
@@ -21,8 +52,47 @@ export default function UniversalEditorTab() {
 
   // Org Meta Fields
   const [logo, setLogo] = useState('');
+  const [parentOrgId, setParentOrgId] = useState('');
+  const [availableOrgs, setAvailableOrgs] = useState<any[]>([]);
 
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchOrgs = async () => {
+      try {
+        const res = await fetch('/api/organizations');
+        if (res.ok) {
+          const data = await res.json();
+          setAvailableOrgs(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch organizations', err);
+      }
+    };
+    fetchOrgs();
+  }, []);
+
+  useEffect(() => {
+    if (editData) {
+      setPostType(editType);
+      setTitle(editData.title || editData.name || '');
+      setSlug(editData.slug || '');
+      setSlugEdited(true);
+      setContent(editData.content || '');
+      
+      if (editType === 'job') {
+        setJobCategory(editData.category || 'Latest Job');
+        setVacancy(editData.vacancy || '');
+        setSalary(editData.salary || '');
+        setPostName(editData.postName || '');
+      } else if (editType === 'blog') {
+        setExcerpt(editData.excerpt || '');
+      } else if (editType === 'organization') {
+        setLogo(editData.logo || '');
+        setParentOrgId(editData.parentOrganization || '');
+      }
+    }
+  }, [editData, editType]);
 
   const handleSave = async () => {
     if (!title || !slug) {
@@ -58,12 +128,18 @@ export default function UniversalEditorTab() {
           name: title,
           slug,
           content,
-          logo
+          logo,
+          ...(parentOrgId ? { parentOrganization: parentOrgId } : {})
         };
       }
 
+      let method = editData ? 'PUT' : 'POST';
+      if (editData) {
+        url = `${url}/${editData._id}`;
+      }
+
       const res = await fetch(url, {
-        method: 'POST',
+        method: method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
@@ -72,11 +148,17 @@ export default function UniversalEditorTab() {
         const error = await res.json();
         alert(error.error || 'Failed to save');
       } else {
-        alert(`${postType.toUpperCase()} saved successfully!`);
-        // Reset form
-        setTitle('');
-        setSlug('');
-        setContent('');
+        alert(`${postType.toUpperCase()} ${editData ? 'updated' : 'saved'} successfully!`);
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          // Reset form if not handling externally
+          setTitle('');
+          setSlug('');
+          setSlugEdited(false);
+          setContent('');
+          setParentOrgId('');
+        }
       }
     } catch (error) {
       console.error('Error saving:', error);
@@ -88,14 +170,29 @@ export default function UniversalEditorTab() {
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <div className="border-b border-gray-200 pb-4 mb-6">
-        <h2 className="text-xl font-bold text-gray-800">Universal Content Editor</h2>
-        <p className="text-sm text-gray-500 mt-1">Publish any type of content to your portal from this unified interface.</p>
+      <div className="border-b border-gray-200 pb-4 mb-6 flex justify-between items-center">
+        <div>
+          <h2 className="text-xl font-bold text-gray-800">
+            {editData ? 'Edit Content (Universal)' : 'Universal Content Editor'}
+          </h2>
+          <p className="text-sm text-gray-500 mt-1">
+            {editData ? 'Update your existing content.' : 'Publish any type of content to your portal from this unified interface.'}
+          </p>
+        </div>
+        {editData && onCancelEdit && (
+          <button 
+            onClick={onCancelEdit}
+            className="px-4 py-2 bg-gray-100 text-gray-700 font-semibold text-sm rounded-md hover:bg-gray-200 transition-colors"
+          >
+            Cancel Edit
+          </button>
+        )}
       </div>
 
-      <div className="flex gap-4 mb-8">
+      <div className="flex gap-4 mb-8 pointer-events-auto">
         <button
           onClick={() => setPostType('job')}
+          disabled={!!editData}
           className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
             postType === 'job' 
               ? 'bg-blue-600 text-white shadow-md ring-2 ring-blue-600 ring-offset-2' 
@@ -118,6 +215,7 @@ export default function UniversalEditorTab() {
         </button>
         <button
           onClick={() => setPostType('organization')}
+          disabled={!!editData}
           className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
             postType === 'organization' 
               ? 'bg-green-600 text-white shadow-md ring-2 ring-green-600 ring-offset-2' 
@@ -139,7 +237,7 @@ export default function UniversalEditorTab() {
             <input 
               type="text" 
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={handleTitleChange}
               className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors"
               placeholder="Enter title..."
             />
@@ -149,7 +247,7 @@ export default function UniversalEditorTab() {
             <input 
               type="text" 
               value={slug}
-              onChange={(e) => setSlug(e.target.value)}
+              onChange={handleSlugChange}
               className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors"
               placeholder="e.g. ssc-cgl-2026"
             />
@@ -206,9 +304,24 @@ export default function UniversalEditorTab() {
           )}
 
           {postType === 'organization' && (
-            <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1">Logo URL</label>
-              <input type="text" value={logo} onChange={(e) => setLogo(e.target.value)} className="w-full p-2 border rounded-md text-sm bg-white" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Logo URL</label>
+                <input type="text" value={logo} onChange={(e) => setLogo(e.target.value)} className="w-full p-2 border rounded-md text-sm bg-white" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Parent Organization (Optional)</label>
+                <select 
+                  value={parentOrgId}
+                  onChange={(e) => setParentOrgId(e.target.value)}
+                  className="w-full p-2 border rounded-md text-sm bg-white"
+                >
+                  <option value="">None (Top Level Pillar)</option>
+                  {availableOrgs.map((org) => (
+                    <option key={org._id} value={org._id}>{org.name}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           )}
         </div>

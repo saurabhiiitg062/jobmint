@@ -123,8 +123,9 @@ export interface Organization {
   logo?: string;
   metaTitle?: string;
   metaDescription?: string;
+  parentOrganization?: string | Organization;
   content: string;
-  createdAt?: string;
+  createdAt: string;
   updatedAt?: string;
 }
 
