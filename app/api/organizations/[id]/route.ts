@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/server/db';
 import { Organization } from '@/lib/server/models/Organization';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const resolvedParams = await params;
     await connectToDatabase();
-    const organization = await Organization.findById(params.id);
+    const organization = await Organization.findById(resolvedParams.id);
     if (!organization) {
       return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
     }
@@ -16,20 +17,21 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const resolvedParams = await params;
     await connectToDatabase();
     const body = await req.json();
 
     // Check slug collision
     if (body.slug) {
-      const existingOrg = await Organization.findOne({ slug: body.slug, _id: { $ne: params.id } });
+      const existingOrg = await Organization.findOne({ slug: body.slug, _id: { $ne: resolvedParams.id } });
       if (existingOrg) {
         return NextResponse.json({ error: 'Another organization with this slug already exists' }, { status: 400 });
       }
     }
 
-    const organization = await Organization.findByIdAndUpdate(params.id, body, { new: true });
+    const organization = await Organization.findByIdAndUpdate(resolvedParams.id, body, { new: true });
     if (!organization) {
       return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
     }
@@ -40,10 +42,11 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const resolvedParams = await params;
     await connectToDatabase();
-    const organization = await Organization.findByIdAndDelete(params.id);
+    const organization = await Organization.findByIdAndDelete(resolvedParams.id);
     if (!organization) {
       return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
     }
